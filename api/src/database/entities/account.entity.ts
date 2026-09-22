@@ -32,6 +32,14 @@ export class Account {
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   initialBalance!: string;
 
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+    default: 0,
+  })
+  currentBalance!: string;
+
   @Column({ default: false })
   isArchived!: boolean;
 
