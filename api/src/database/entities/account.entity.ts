@@ -11,6 +11,7 @@ import { AccountType } from '../enums/account-type.enum';
 import { User } from './user.entity';
 import { Transaction } from './transaction.entity';
 import { SavingsGoal } from './savings-goal.entity';
+import { LoanPayment } from './loan-payment.entity';
 
 @Entity('accounts')
 export class Account {
@@ -54,6 +55,9 @@ export class Account {
 
   @OneToMany(() => SavingsGoal, (goal) => goal.account)
   savingsGoals!: SavingsGoal[];
+
+  @OneToMany(() => LoanPayment, (payment) => payment.account)
+  loanPayments!: LoanPayment[];
 
   @CreateDateColumn()
   createdAt!: Date;

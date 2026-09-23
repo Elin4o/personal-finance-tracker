@@ -2,10 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Loan } from './loan.entity';
+import { Account } from './account.entity';
+import { Transaction } from './transaction.entity';
 
 @Entity('loan_payments')
 export class LoanPayment {
@@ -29,6 +33,19 @@ export class LoanPayment {
     onDelete: 'CASCADE',
   })
   loan!: Loan;
+
+  @ManyToOne(() => Account, (account) => account.loanPayments, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  account!: Account;
+
+  @OneToOne(() => Transaction, {
+    nullable: false,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'transactionId' })
+  transaction!: Transaction;
 
   @CreateDateColumn()
   createdAt!: Date;

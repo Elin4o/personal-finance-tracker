@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { LoanPayment } from './loan-payment.entity';
+import { LoanType } from '../enums/loan-type.enum';
 
 @Entity('loans')
 export class Loan {
@@ -18,8 +19,21 @@ export class Loan {
   @Column()
   personName!: string;
 
+  @Column({
+    type: 'enum',
+    enum: LoanType,
+  })
+  type!: LoanType;
+
   @Column({ type: 'numeric', precision: 15, scale: 2 })
   amount!: string;
+
+  @Column({
+    type: 'numeric',
+    precision: 15,
+    scale: 2,
+  })
+  currentLoanBalance!: string;
 
   @Column({ length: 3 })
   currency!: string;

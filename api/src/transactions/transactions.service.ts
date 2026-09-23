@@ -9,9 +9,11 @@ import { Repository, DataSource, QueryRunner } from 'typeorm';
 import { Account } from '../database/entities/account.entity';
 import { Category } from '../database/entities/category.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { QueryTransactionsDto } from './dto/query-transactions.dto';
 import { TransactionType } from '../database/enums/transaction-type.enum';
 import { CategoryType } from '../database/enums/category-type.enum';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import Decimal from 'decimal.js';
 
 @Injectable()
 export class TransactionsService {
@@ -28,18 +30,73 @@ export class TransactionsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async findAllForUser(userId: string) {
-    return this.transactionRepository.find({
-      where: {
-        user: {
-          id: userId,
-        },
+  async findAllForUser(userId: string, query: QueryTransactionsDto) {
+    const {
+      accountId,
+      categoryId,
+      type,
+      dateFrom,
+      dateTo,
+      page = 1,
+      limit = 20,
+    } = query;
+
+    const queryBuilder = this.transactionRepository
+      .createQueryBuilder('transaction')
+      .leftJoinAndSelect('transaction.account', 'account')
+      .leftJoinAndSelect('transaction.transferToAccount', 'transferToAccount')
+      .leftJoinAndSelect('transaction.category', 'category')
+      .where('transaction.userId = :userId', { userId });
+
+    if (accountId) {
+      queryBuilder.andWhere('transaction.accountId = :accountId', {
+        accountId,
+      });
+    }
+
+    if (categoryId) {
+      queryBuilder.andWhere('transaction.categoryId = :categoryId', {
+        categoryId,
+      });
+    }
+
+    if (type) {
+      queryBuilder.andWhere('transaction.type = :type', {
+        type,
+      });
+    }
+
+    if (dateFrom) {
+      queryBuilder.andWhere('transaction.date >= :dateFrom', {
+        dateFrom,
+      });
+    }
+
+    if (dateTo) {
+      queryBuilder.andWhere('transaction.date <= :dateTo', {
+        dateTo,
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    queryBuilder
+      .orderBy('transaction.date', 'DESC')
+      .addOrderBy('transaction.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    const [transactions, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: transactions,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-      order: {
-        date: 'DESC',
-        createdAt: 'DESC',
-      },
-    });
+    };
   }
 
   async findOneForUser(transactionId: string, userId: string) {
@@ -182,14 +239,24 @@ export class TransactionsService {
         await queryRunner.manager.save(Account, oldTransferToAccount);
       }
 
+      const transferToAccountId =
+        updateTransactionDto.type &&
+        updateTransactionDto.type !== TransactionType.TRANSFER
+          ? undefined
+          : (updateTransactionDto.transferToAccountId ??
+            transaction.transferToAccount?.id);
+
+      const categoryId =
+        updateTransactionDto.type === TransactionType.TRANSFER
+          ? undefined
+          : (updateTransactionDto.categoryId ?? transaction.category?.id);
+
       const mergedDto: CreateTransactionDto = {
         accountId: updateTransactionDto.accountId ?? transaction.account.id,
 
-        transferToAccountId:
-          updateTransactionDto.transferToAccountId ??
-          transaction.transferToAccount?.id,
+        transferToAccountId,
 
-        categoryId: updateTransactionDto.categoryId ?? transaction.category?.id,
+        categoryId,
 
         type: updateTransactionDto.type ?? transaction.type,
 
@@ -222,13 +289,13 @@ export class TransactionsService {
       }
 
       transaction.account = account;
-      transaction.transferToAccount = transferToAccount;
-      transaction.category = category;
+      transaction.transferToAccount = transferToAccount ?? null;
+      transaction.category = category ?? null;
       transaction.type = mergedDto.type;
       transaction.amount = mergedDto.amount;
       transaction.currency = mergedDto.currency;
       transaction.date = new Date(mergedDto.date);
-      transaction.description = mergedDto.description ?? '';
+      transaction.description = mergedDto.description ?? null;
 
       const updatedTransaction = await queryRunner.manager.save(
         Transaction,
@@ -325,14 +392,7 @@ export class TransactionsService {
     dto: CreateTransactionDto,
     userId: string,
   ) {
-    const {
-      accountId,
-      transferToAccountId,
-      categoryId,
-      type,
-      amount,
-      currency,
-    } = dto;
+    const { accountId, transferToAccountId, categoryId, type, currency } = dto;
 
     const account = await queryRunner.manager.findOne(Account, {
       where: {
@@ -350,7 +410,12 @@ export class TransactionsService {
       throw new NotFoundException('Account not found');
     }
 
-    if (Number(amount) <= 0) {
+    const numericAmount = new Decimal(dto.amount);
+
+    if (!numericAmount.isFinite()) {
+      throw new BadRequestException('Amount must be a valid number');
+    }
+    if (numericAmount.lte(0)) {
       throw new BadRequestException('Amount must be greater than zero');
     }
 
@@ -462,32 +527,32 @@ export class TransactionsService {
     type: TransactionType,
     amount: string,
   ) {
-    const numericAmount = Number(amount);
+    const numericAmount = new Decimal(amount);
 
     if (type === TransactionType.INCOME) {
-      account.currentBalance = (
-        Number(account.currentBalance) + numericAmount
-      ).toFixed(2);
+      account.currentBalance = new Decimal(account.currentBalance)
+        .plus(numericAmount)
+        .toFixed(2);
     }
 
     if (type === TransactionType.EXPENSE) {
-      account.currentBalance = (
-        Number(account.currentBalance) - numericAmount
-      ).toFixed(2);
+      account.currentBalance = new Decimal(account.currentBalance)
+        .minus(numericAmount)
+        .toFixed(2);
     }
 
     if (type === TransactionType.TRANSFER) {
-      account.currentBalance = (
-        Number(account.currentBalance) - numericAmount
-      ).toFixed(2);
-
+      account.currentBalance = new Decimal(account.currentBalance)
+        .minus(numericAmount)
+        .toFixed(2);
       if (!transferToAccount) {
         throw new BadRequestException('Transfer destination is required');
       }
-
-      transferToAccount.currentBalance = (
-        Number(transferToAccount.currentBalance) + numericAmount
-      ).toFixed(2);
+      transferToAccount.currentBalance = new Decimal(
+        transferToAccount.currentBalance,
+      )
+        .plus(numericAmount)
+        .toFixed(2);
     }
   }
 
@@ -497,32 +562,32 @@ export class TransactionsService {
     type: TransactionType,
     amount: string,
   ) {
-    const numericAmount = Number(amount);
+    const numericAmount = new Decimal(amount);
 
     if (type === TransactionType.INCOME) {
-      account.currentBalance = (
-        Number(account.currentBalance) - numericAmount
-      ).toFixed(2);
+      account.currentBalance = new Decimal(account.currentBalance)
+        .minus(numericAmount)
+        .toFixed(2);
     }
 
     if (type === TransactionType.EXPENSE) {
-      account.currentBalance = (
-        Number(account.currentBalance) + numericAmount
-      ).toFixed(2);
+      account.currentBalance = new Decimal(account.currentBalance)
+        .plus(numericAmount)
+        .toFixed(2);
     }
 
     if (type === TransactionType.TRANSFER) {
-      account.currentBalance = (
-        Number(account.currentBalance) + numericAmount
-      ).toFixed(2);
-
+      account.currentBalance = new Decimal(account.currentBalance)
+        .plus(numericAmount)
+        .toFixed(2);
       if (!transferToAccount) {
         throw new BadRequestException('Transfer destination is required');
       }
-
-      transferToAccount.currentBalance = (
-        Number(transferToAccount.currentBalance) - numericAmount
-      ).toFixed(2);
+      transferToAccount.currentBalance = new Decimal(
+        transferToAccount.currentBalance,
+      )
+        .minus(numericAmount)
+        .toFixed(2);
     }
   }
 }

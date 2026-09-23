@@ -5,11 +5,13 @@ import {
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { TransactionType } from '../enums/transaction-type.enum';
 import { Account } from './account.entity';
 import { Category } from './category.entity';
 import { User } from './user.entity';
+import { LoanPayment } from './loan-payment.entity';
 
 @Entity('transactions')
 export class Transaction {
@@ -57,6 +59,9 @@ export class Transaction {
     onDelete: 'RESTRICT',
   })
   category!: Category | null;
+
+  @OneToOne(() => LoanPayment, (loanPayment) => loanPayment.transaction)
+  loanPayment!: LoanPayment;
 
   @CreateDateColumn()
   createdAt!: Date;

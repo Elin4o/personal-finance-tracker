@@ -8,6 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { LoansModule } from './loans/loans.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     AccountsModule,
     CategoriesModule,
     TransactionsModule,
+    LoansModule,
   ],
   controllers: [AppController],
   providers: [AppService],

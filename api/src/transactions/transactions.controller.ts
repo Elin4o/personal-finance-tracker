@@ -6,14 +6,16 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { TransactionsService } from './transactions.service';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
-import type { AuthenticatedUser } from '../auth/types/authenticated-request';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { QueryTransactionsDto } from './dto/query-transactions.dto';
+import type { AuthenticatedUser } from '../auth/types/authenticated-request';
 
 @Controller('transactions')
 @UseGuards(JwtAuthGuard)
@@ -21,8 +23,11 @@ export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
   @Get()
-  findAll(@CurrentUser() user: AuthenticatedUser) {
-    return this.transactionsService.findAllForUser(user.userId);
+  findAll(
+    @Query() query: QueryTransactionsDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.transactionsService.findAllForUser(user.userId, query);
   }
 
   @Get(':id')
