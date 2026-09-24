@@ -1,9 +1,10 @@
 "use client";
 
-import { clearAccessToken, getAccessToken, setAccessToken } from "@/lib/api";
+import { setAccessToken } from "@/lib/api";
 import {
   getMe,
   login as loginApi,
+  logout as logoutApi,
   register as registerApi,
 } from "@/lib/auth-api";
 import {
@@ -24,7 +25,7 @@ type AuthContextValue = {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -37,16 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let isMounted = true;
 
     const restoreSession = async () => {
-      const token = getAccessToken();
-
-      if (!token) {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-
-        return;
-      }
-
       try {
         const currentUser = await getMe();
 
@@ -55,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch {
         if (isMounted) {
-          clearAccessToken();
+          setAccessToken(null);
           setUser(null);
         }
       } finally {
@@ -88,10 +79,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
-  const logout = () => {
-    clearAccessToken();
-    setUser(null);
-    setIsLoading(false);
+  const logout = async () => {
+    try {
+      await logoutApi();
+    } finally {
+      setAccessToken(null);
+      setUser(null);
+      setIsLoading(false);
+    }
   };
 
   return (

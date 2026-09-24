@@ -1,9 +1,11 @@
 import createMiddleware from "next-intl/middleware";
 
-export default createMiddleware({
+const proxy = createMiddleware({
   locales: ["en"],
   defaultLocale: "en",
 });
+
+export default proxy;
 
 export const config = {
   matcher: ["/((?!api|_next|.*\\..*).*)"],

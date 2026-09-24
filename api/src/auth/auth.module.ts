@@ -7,15 +7,17 @@ import { NotificationSettings } from '../database/entities/notification-settings
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
+import { RefreshToken } from '../database/entities/refresh-token.entity';
+import { RefreshTokenCleanupService } from './refresh-token-cleanup.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, NotificationSettings]),
+    TypeOrmModule.forFeature([User, NotificationSettings, RefreshToken]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: '15m',
         },
@@ -23,7 +25,7 @@ import { JwtStrategy } from './jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RefreshTokenCleanupService],
   exports: [],
 })
 export class AuthModule {}

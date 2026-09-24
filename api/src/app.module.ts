@@ -9,12 +9,16 @@ import { AccountsModule } from './accounts/accounts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { LoansModule } from './loans/loans.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
@@ -28,6 +32,12 @@ import { LoansModule } from './loans/loans.module';
         synchronize: false,
       }),
     }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 20, // 20 requests/minute, global default
+      },
+    ]),
     AuthModule,
     DatabaseModule,
     AccountsModule,
@@ -36,6 +46,6 @@ import { LoansModule } from './loans/loans.module';
     LoansModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

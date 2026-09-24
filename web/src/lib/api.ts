@@ -4,51 +4,97 @@ if (!API_URL) {
   throw new Error("NEXT_PUBLIC_API_URL is not defined");
 }
 
-const ACCESS_TOKEN_KEY = "access_token";
+let accessToken: string | null = null;
 
 export function getAccessToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
+  return accessToken;
+}
+
+export function setAccessToken(token: string | null): void {
+  accessToken = token;
+}
+
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      try {
+        const response = await fetch(`${API_URL}/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          setAccessToken(null);
+          return null;
+        }
+
+        const data = (await response.json()) as { accessToken: string };
+        setAccessToken(data.accessToken);
+        return data.accessToken;
+      } catch {
+        setAccessToken(null);
+        return null;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
   }
-
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  return refreshPromise;
 }
 
-export function setAccessToken(token: string): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, token);
+class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
 }
 
-export function clearAccessToken(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
+async function rawFetch<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<Response> {
+  const token = getAccessToken();
+
+  return fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: "include",
+    headers: {
+      "Content-type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options?.headers,
+    },
+  });
 }
 
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const token = getAccessToken();
+  let response = await rawFetch<T>(path, options);
 
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-type": "application/json",
-      ...(token
-        ? {
-            Authorization: `Bearer ${token}`,
-          }
-        : {}),
-      ...options?.headers,
-    },
-  });
+  if (response.status === 401 && path !== "/auth/refresh") {
+    const newToken = await refreshAccessToken();
+
+    if (newToken) {
+      response = await rawFetch<T>(path, options);
+    }
+  }
 
   if (!response.ok) {
     if (response.status === 401) {
-      clearAccessToken();
+      setAccessToken(null);
     }
 
-    throw new Error(`API request failed: ${response.status}`);
+    throw new ApiError(
+      response.status,
+      `API request failed: ${response.status}`,
+    );
   }
-
   return response.json();
 }
 

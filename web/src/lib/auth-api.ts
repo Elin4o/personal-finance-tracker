@@ -17,22 +17,20 @@ export async function login(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  return apiPost<AuthResponse>("/auth/login", {
-    email,
-    password,
-  });
+  return apiPost<AuthResponse>("/auth/login", { email, password });
 }
 
 export async function register(
   email: string,
   password: string,
 ): Promise<AuthResponse> {
-  return apiPost<AuthResponse>("/auth/register", {
-    email,
-    password,
-  });
+  return apiPost<AuthResponse>("/auth/register", { email, password });
 }
 
 export async function getMe(): Promise<MeResponse> {
   return apiGet<MeResponse>("/auth/me");
+}
+
+export async function logout(): Promise<void> {
+  await apiPost<{ success: boolean }>("/auth/logout");
 }
