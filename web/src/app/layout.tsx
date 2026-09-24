@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Personal Finance Tracker",
+  title: "Fiscora",
   description:
     "Manage your personal finances, accounts, transactions and loans.",
 };

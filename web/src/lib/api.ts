@@ -44,7 +44,7 @@ async function refreshAccessToken(): Promise<string | null> {
   return refreshPromise;
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
