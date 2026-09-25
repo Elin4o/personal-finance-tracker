@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, SubmitEvent } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { ApiError } from "@/lib/api";
@@ -29,7 +28,7 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      router.push("/en/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         setError("Incorrect email or password.");
@@ -120,7 +119,7 @@ export default function LoginPage() {
         <p className="text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
           <Link
-            href="/en/register"
+            href="/register"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
             Create one

@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from '../database/entities/account.entity';
 import { Repository } from 'typeorm';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { Transaction } from '../database/entities/transaction.entity';
 
 @Injectable()
 export class AccountsService {
   constructor(
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+
+    @InjectRepository(Transaction)
+    private readonly transactionRepository: Repository<Transaction>,
   ) {}
 
   async findAllForUser(userId: string) {
@@ -68,6 +76,19 @@ export class AccountsService {
 
   async remove(accountId: string, userId: string) {
     const account = await this.findOneForUser(accountId, userId);
+    const transactionCount = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where(
+        'transaction.accountId = :accountId OR transaction.transferToAccountId = :accountId',
+        { accountId },
+      )
+      .getCount();
+
+    if (transactionCount > 0) {
+      throw new ConflictException(
+        'This account has existing transactions and cannot be deleted. Archive it instead.',
+      );
+    }
     await this.accountRepository.remove(account);
 
     return {

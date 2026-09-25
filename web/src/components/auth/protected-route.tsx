@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
+import { useRouter } from "@/i18n/navigation";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -14,7 +14,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
 
     if (!user) {
-      router.replace("/en/login");
+      router.replace("/login");
     }
   }, [isLoading, user, router]);
 

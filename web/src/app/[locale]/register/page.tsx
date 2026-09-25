@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, SubmitEvent } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/providers/auth-provider";
 import { ApiError } from "@/lib/api";
@@ -35,7 +34,7 @@ export default function RegisterPage() {
 
     try {
       await register(email, password);
-      router.push("/en/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setError("An account with this email already exists.");
@@ -142,7 +141,7 @@ export default function RegisterPage() {
         <p className="text-sm text-muted-foreground">
           Already have an account?{" "}
           <Link
-            href="/en/login"
+            href="/login"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
             Sign in
