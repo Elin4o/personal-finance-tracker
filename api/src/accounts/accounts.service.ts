@@ -69,6 +69,25 @@ export class AccountsService {
   ) {
     const account = await this.findOneForUser(accountId, userId);
 
+    if (
+      updateAccountDto.currency &&
+      updateAccountDto.currency !== account.currency
+    ) {
+      const transactionCount = await this.transactionRepository
+        .createQueryBuilder('transaction')
+        .where(
+          'transaction.accountId = :accountId OR transaction.transferToAccountId = :accountId',
+          { accountId },
+        )
+        .getCount();
+
+      if (transactionCount > 0) {
+        throw new ConflictException(
+          'Currency cannot be changed on an account with existing transactions.',
+        );
+      }
+    }
+
     Object.assign(account, updateAccountDto);
 
     return this.accountRepository.save(account);

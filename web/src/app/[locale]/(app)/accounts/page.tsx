@@ -20,7 +20,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Account, getAccounts } from "@/lib/accounts-api";
+import { Account, getAccounts, updateAccount } from "@/lib/accounts-api";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const ACCOUNT_TYPE_LABELS: Record<Account["type"], string> = {
   CASH: "Cash",
@@ -38,6 +40,12 @@ export default function AccountsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [deletingAccount, setDeletingAccount] = useState<Account | null>(null);
+
+  const [showArchived, setShowArchived] = useState(false);
+
+  const visibleAccounts = showArchived
+    ? accounts
+    : accounts.filter((a) => !a.isArchived);
 
   async function loadAccounts() {
     setIsLoading(true);
@@ -85,15 +93,30 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      {accounts.length > 0 && (
+      {visibleAccounts.length > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             Manage your cash, bank, and card accounts.
           </p>
-          <Button onClick={openCreateDialog} className="cursor-pointer">
-            <Plus className="size-4" />
-            Add account
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Switch
+                id="show-archived"
+                checked={showArchived}
+                onCheckedChange={setShowArchived}
+              />
+              <Label
+                htmlFor="show-archived"
+                className="text-sm text-muted-foreground"
+              >
+                Show archived
+              </Label>
+            </div>
+            <Button onClick={openCreateDialog}>
+              <Plus className="size-4" />
+              Add account
+            </Button>
+          </div>
         </div>
       )}
 
@@ -109,7 +132,7 @@ export default function AccountsPage() {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {!isLoading && !error && accounts.length === 0 && (
+      {!isLoading && !error && visibleAccounts.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <p className="text-sm font-medium">No accounts yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -122,7 +145,7 @@ export default function AccountsPage() {
         </div>
       )}
 
-      {!isLoading && !error && accounts.length > 0 && (
+      {!isLoading && !error && visibleAccounts.length > 0 && (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -135,8 +158,11 @@ export default function AccountsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accounts.map((account) => (
-                <TableRow key={account.id}>
+              {visibleAccounts.map((account) => (
+                <TableRow
+                  key={account.id}
+                  className={account.isArchived ? "opacity-50" : ""}
+                >
                   <TableCell className="font-medium">{account.name}</TableCell>
                   <TableCell>{ACCOUNT_TYPE_LABELS[account.type]}</TableCell>
                   <TableCell>{account.currency}</TableCell>
@@ -155,6 +181,19 @@ export default function AccountsPage() {
                           onClick={() => openEditDialog(account)}
                         >
                           Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            await updateAccount(account.id, {
+                              isArchived: !account.isArchived,
+                              name: account.name,
+                              type: account.type,
+                              currency: account.currency,
+                            });
+                            loadAccounts();
+                          }}
+                        >
+                          {account.isArchived ? "Unarchive" : "Archive"}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           variant="destructive"
@@ -177,7 +216,6 @@ export default function AccountsPage() {
         onOpenChange={setIsDialogOpen}
         onSuccess={loadAccounts}
         account={editingAccount}
-        key={editingAccount?.id}
       />
 
       <DeleteAccountDialog

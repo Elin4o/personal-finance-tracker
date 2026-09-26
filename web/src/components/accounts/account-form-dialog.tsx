@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ApiError } from "@/lib/api";
+import { exactLength, required } from "@/lib/validation";
 
 interface AccountDialogProps {
   open: boolean;
@@ -48,17 +50,52 @@ export default function AccountFormDialog({
   onSuccess,
   account,
 }: AccountDialogProps) {
-  const [name, setName] = useState(account?.name ?? "");
-  const [type, setType] = useState<AccountType>(account?.type ?? "CASH");
-  const [currency, setCurrency] = useState(account?.currency ?? "EUR");
+  const [name, setName] = useState("");
+  const [type, setType] = useState<AccountType>("CASH");
+  const [currency, setCurrency] = useState("EUR");
   const [initialBalance, setInitialBalance] = useState("0");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+
+    if (open) {
+      setName(account?.name ?? "");
+      setType(account?.type ?? "CASH");
+      setCurrency(account?.currency ?? "EUR");
+      setInitialBalance("0");
+      setError("");
+    }
+  }
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+
+    const nameError = required(name, "Enter an account name.");
+    if (nameError) errors.name = nameError;
+
+    const currencyError = exactLength(
+      currency,
+      3,
+      "Currency must be 3 letters.",
+    );
+    if (currencyError) errors.currency = currencyError;
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setIsSubmitting(true);
+
+    if (!validate()) return;
 
     try {
       if (account) {
@@ -73,12 +110,18 @@ export default function AccountFormDialog({
       }
       onOpenChange(false);
       onSuccess();
-    } catch {
-      setError(
-        account
-          ? "Failed to update account. Please try again."
-          : "Failed to create account. Please try again.",
-      );
+    } catch (err) {
+      if (account && err instanceof ApiError && err.status === 409) {
+        setError(
+          "Currency can't be changed — this account has existing transactions.",
+        );
+      } else {
+        setError(
+          account
+            ? "Failed to update account. Please try again."
+            : "Failed to create account. Please try again.",
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -106,7 +149,11 @@ export default function AccountFormDialog({
               required
               maxLength={100}
               placeholder="e.g. Revolut, Cash wallet"
+              className={fieldErrors.name ? "border-destructive" : ""}
             />
+            {fieldErrors.name && (
+              <p className="text-xs text-destructive">{fieldErrors.name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -118,7 +165,7 @@ export default function AccountFormDialog({
               <SelectTrigger id="type" className="w-full">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper">
                 {ACCOUNT_TYPES.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -141,7 +188,13 @@ export default function AccountFormDialog({
                 maxLength={3}
                 minLength={3}
                 placeholder="EUR"
+                className={fieldErrors.currency ? "border-destructive" : ""}
               />
+              {fieldErrors.currency && (
+                <p className="text-xs text-destructive">
+                  {fieldErrors.currency}
+                </p>
+              )}
             </div>
             {!account && (
               <div className="space-y-2">
