@@ -175,7 +175,7 @@ export default function AccountFormDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="currency">Currency</Label>
               <Input
@@ -218,7 +218,11 @@ export default function AccountFormDialog({
           )}
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              className="h-11 px-4 md:h-10"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />

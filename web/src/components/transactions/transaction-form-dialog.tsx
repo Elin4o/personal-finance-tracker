@@ -325,7 +325,7 @@ export default function TransactionFormDialog({
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="amount">Amount</Label>
               <Input
@@ -380,7 +380,11 @@ export default function TransactionFormDialog({
           )}
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting || !accountId}>
+            <Button
+              className="h-11 px-4 md:h-10"
+              type="submit"
+              disabled={isSubmitting || !accountId}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />

@@ -29,13 +29,32 @@ export type TransactionsResponse = {
   };
 };
 
+export type TransactionFilters = {
+  type?: TransactionType;
+  accountId?: string;
+  categoryId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+};
+
 export function getTransactions(
   page = 1,
   limit = 20,
+  filters: TransactionFilters = {},
 ): Promise<TransactionsResponse> {
-  return apiGet<TransactionsResponse>(
-    `/transactions?page=${page}&limit=${limit}`,
-  );
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  if (filters.type) params.set("type", filters.type);
+  if (filters.accountId) params.set("accountId", filters.accountId);
+  if (filters.categoryId) params.set("categoryId", filters.categoryId);
+  if (filters.dateFrom)
+    params.set("dateFrom", `${filters.dateFrom}T00:00:00.000Z`);
+  if (filters.dateTo) params.set("dateTo", `${filters.dateTo}T23:59:59.999Z`);
+
+  return apiGet<TransactionsResponse>(`/transactions?${params.toString()}`);
 }
 
 export function createTransaction(data: {

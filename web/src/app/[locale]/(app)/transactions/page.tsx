@@ -26,8 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Transaction, getTransactions } from "@/lib/transactions-api";
+import {
+  Transaction,
+  TransactionFilters,
+  getTransactions,
+} from "@/lib/transactions-api";
 import { Badge } from "@/components/ui/badge";
+import { Account, getAccounts } from "@/lib/accounts-api";
+import { Category, getCategories } from "@/lib/categories-api";
+import TransactionFiltersBar from "@/components/transactions/transaction-filters";
 
 function formatAmount(transaction: Transaction) {
   const value = parseFloat(transaction.amount).toFixed(2);
@@ -67,12 +74,22 @@ export default function TransactionsPage() {
   const [deletingTransaction, setDeletingTransaction] =
     useState<Transaction | null>(null);
 
+  const [filters, setFilters] = useState<TransactionFilters>({});
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const hasActiveFilters = Object.values(filters).some(Boolean);
+
+  function handleFiltersChange(next: TransactionFilters) {
+    setPage(1);
+    setFilters(next);
+  }
+
   async function loadTransactions() {
     setIsLoading(true);
     setError("");
 
     try {
-      const result = await getTransactions(page);
+      const result = await getTransactions(page, 20, filters);
 
       if (page > result.meta.totalPages && page > 1) {
         setPage(result.meta.totalPages);
@@ -93,10 +110,11 @@ export default function TransactionsPage() {
 
     async function run() {
       try {
-        const result = await getTransactions(page);
+        const result = await getTransactions(page, 20, filters);
         if (!ignore) {
           setTransactions(result.data);
           setTotalPages(result.meta.totalPages);
+          setError("");
         }
       } catch {
         if (!ignore) setError("Failed to load transactions.");
@@ -110,7 +128,28 @@ export default function TransactionsPage() {
     return () => {
       ignore = true;
     };
-  }, [page]);
+  }, [page, filters]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    void (async () => {
+      try {
+        const [accountsData, categoriesData] = await Promise.all([
+          getAccounts(),
+          getCategories(),
+        ]);
+        if (!ignore) {
+          setAccounts(accountsData);
+          setCategories(categoriesData);
+        }
+      } catch {}
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   function openCreateDialog() {
     setEditingTransaction(null);
@@ -124,20 +163,28 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      {transactions.length > 0 && (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            All your income, expenses, and transfers.
-          </p>
+      {(transactions.length > 0 || hasActiveFilters) && (
+        <>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              All your income, expenses, and transfers.
+            </p>
 
-          <Button
-            className="h-11 shrink-0 px-4 md:h-10"
-            onClick={openCreateDialog}
-          >
-            <Plus className="size-4" />
-            Add transaction
-          </Button>
-        </div>
+            <Button
+              className="h-11 shrink-0 px-4 md:h-10"
+              onClick={openCreateDialog}
+            >
+              <Plus className="size-4" />
+              Add transaction
+            </Button>
+          </div>
+          <TransactionFiltersBar
+            filters={filters}
+            onChange={handleFiltersChange}
+            accounts={accounts}
+            categories={categories}
+          />
+        </>
       )}
 
       {isLoading && (
@@ -152,18 +199,43 @@ export default function TransactionsPage() {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {!isLoading && !error && transactions.length === 0 && (
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm font-medium">No transactions yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Add your first transaction to start tracking your spending.
-          </p>
-          <Button className="mt-4" onClick={openCreateDialog}>
-            <Plus className="size-4" />
-            Add your first transaction
-          </Button>
-        </div>
-      )}
+      {!isLoading &&
+        !error &&
+        transactions.length === 0 &&
+        !hasActiveFilters && (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
+            <p className="text-sm font-medium">No transactions yet</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Add your first transaction to start tracking your spending.
+            </p>
+            <Button
+              className="mt-4 h-11 px-4 md:h-10"
+              onClick={openCreateDialog}
+            >
+              <Plus className="size-4" />
+              Add your first transaction
+            </Button>
+          </div>
+        )}
+
+      {!isLoading &&
+        !error &&
+        transactions.length === 0 &&
+        hasActiveFilters && (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <p className="text-sm font-medium">No matching transactions</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try changing or clearing your filters.
+            </p>
+            <Button
+              variant="outline"
+              className="mt-4 h-11 px-4 md:h-10"
+              onClick={() => handleFiltersChange({})}
+            >
+              Clear filters
+            </Button>
+          </div>
+        )}
 
       {!isLoading && !error && transactions.length > 0 && (
         <>

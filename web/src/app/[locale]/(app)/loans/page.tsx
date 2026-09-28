@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Loan, getLoans } from "@/lib/loans-api";
+import LoanPaymentsDialog from "@/components/loans/loan-payments-dialog";
 
 export default function LoansPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -25,6 +26,8 @@ export default function LoansPage() {
   const [editingLoan, setEditingLoan] = useState<Loan | null>(null);
   const [deletingLoan, setDeletingLoan] = useState<Loan | null>(null);
   const [payingLoan, setPayingLoan] = useState<Loan | null>(null);
+
+  const [historyLoan, setHistoryLoan] = useState<Loan | null>(null);
 
   async function loadLoans() {
     setIsLoading(true);
@@ -104,7 +107,7 @@ export default function LoansPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Track money you&apos;ve lent to or borrowed from someone.
           </p>
-          <Button className="mt-4" onClick={openCreateDialog}>
+          <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
             <Plus className="size-4" />
             Add your first loan
           </Button>
@@ -125,7 +128,7 @@ export default function LoansPage() {
                   <div className="flex items-start gap-3">
                     <HandCoins className="mt-0.5 size-5 text-muted-foreground" />
                     <div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <p className="font-medium">{loan.personName}</p>
                         <Badge
                           variant="outline"
@@ -154,6 +157,11 @@ export default function LoansPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {loan.payments.length > 0 && (
+                        <DropdownMenuItem onClick={() => setHistoryLoan(loan)}>
+                          View payments
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => openEditDialog(loan)}>
                         Edit
                       </DropdownMenuItem>
@@ -165,10 +173,10 @@ export default function LoansPage() {
                 </div>
 
                 <div className="mt-4 space-y-1.5">
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex flex-col-reverse gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-muted-foreground">
-                      {(total - remaining).toFixed(2)} of {total.toFixed(2)}
-                      {loan.currency}
+                      Paid {(total - remaining).toFixed(2)} of{" "}
+                      {total.toFixed(2)} {loan.currency}
                     </span>
                     <span className="font-mono font-medium">
                       {remaining.toFixed(2)} {loan.currency} left
@@ -184,6 +192,7 @@ export default function LoansPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="mt-3 h-11 w-full px-4 sm:h-10 sm:w-auto"
                       onClick={() => setPayingLoan(loan)}
                     >
                       Record payment
@@ -195,6 +204,14 @@ export default function LoansPage() {
           })}
         </div>
       )}
+
+      <LoanPaymentsDialog
+        loan={historyLoan}
+        onOpenChange={(open) => {
+          if (!open) setHistoryLoan(null);
+        }}
+        onChanged={loadLoans}
+      />
 
       <LoanFormDialog
         open={isDialogOpen}

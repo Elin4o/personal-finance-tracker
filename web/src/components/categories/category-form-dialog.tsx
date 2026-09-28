@@ -155,7 +155,11 @@ export default function CategoryFormDialog({
           )}
 
           <DialogFooter>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              className="h-11 px-4 md:h-10"
+              type="submit"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />

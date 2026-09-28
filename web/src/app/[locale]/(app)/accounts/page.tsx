@@ -140,7 +140,7 @@ export default function AccountsPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Add your first account to start tracking your money.
           </p>
-          <Button className="mt-4" onClick={openCreateDialog}>
+          <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
             <Plus className="size-4" />
             Add your first account
           </Button>

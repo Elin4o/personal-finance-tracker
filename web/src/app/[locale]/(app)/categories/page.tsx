@@ -133,7 +133,7 @@ export default function CategoriesPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             Add a category to start organizing your transactions.
           </p>
-          <Button className="mt-4" onClick={openCreateDialog}>
+          <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
             <Plus className="size-4" />
             Add your first category
           </Button>
@@ -156,7 +156,11 @@ export default function CategoriesPage() {
                   key={category.id}
                   className={category.isArchived ? "opacity-50" : ""}
                 >
-                  <TableCell className="font-medium">{category.name}</TableCell>
+                  <TableCell className="w-full max-w-0 font-medium">
+                    <span className="block truncate" title={category.name}>
+                      {category.name}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant="outline"

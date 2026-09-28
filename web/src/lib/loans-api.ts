@@ -9,6 +9,8 @@ export type LoanPayment = {
   date: string;
   note: string | null;
   createdAt: string;
+  account?: { id: string; name: string };
+  transaction?: { id: string };
 };
 
 export type Loan = {

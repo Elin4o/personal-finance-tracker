@@ -122,7 +122,7 @@ export default function LoginPage() {
             href="/register"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Create one
+            {" " + "Create one"}
           </Link>
         </p>
       </form>

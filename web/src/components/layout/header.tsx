@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut } from "lucide-react";
+import { ChevronDown, LogOut, Wallet } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { usePathname } from "@/i18n/navigation";
 import { navItems } from "./nav-items";
@@ -22,13 +22,26 @@ export function Header() {
 
   return (
     <header className="flex items-center justify-between border-b px-6 py-3">
-      <h1 className="text-lg font-semibold">{currentPage?.label ?? ""}</h1>
+      <div className="flex items-center gap-2">
+        <Wallet className="size-5 text-primary md:hidden" />
+        <h1 className="text-lg font-semibold">{currentPage?.label ?? ""}</h1>
+      </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button type="button" className="ml-auto cursor-pointer">
-            <Avatar>
-              <AvatarFallback>{initial}</AvatarFallback>
+          <button
+            type="button"
+            aria-label="Account menu"
+            className="ml-auto flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted md:pr-3"
+          >
+            <Avatar className="size-8">
+              <AvatarFallback className="bg-primary/10 font-medium text-primary">
+                {initial}
+              </AvatarFallback>
             </Avatar>
+            <span className="hidden max-w-40 truncate text-sm md:inline">
+              {user?.email}
+            </span>
+            <ChevronDown className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
