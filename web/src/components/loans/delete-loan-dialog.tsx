@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { Account, deleteAccount } from "@/lib/accounts-api";
+import { Loan, deleteLoan } from "@/lib/loans-api";
 import { ApiError } from "@/lib/api";
 import {
   AlertDialog,
@@ -15,43 +15,41 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface DeleteAccountDialogProps {
-  account: Account | null;
+interface DeleteLoanDialogProps {
+  loan: Loan | null;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export default function DeleteAccountDialog({
-  account,
+export default function DeleteLoanDialog({
+  loan,
   onOpenChange,
   onSuccess,
-}: DeleteAccountDialogProps) {
+}: DeleteLoanDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
-  const [prevAccount, setPrevAccount] = useState(account);
+  const [prevLoan, setPrevLoan] = useState(loan);
 
-  if (account !== prevAccount) {
-    setPrevAccount(account);
+  if (loan !== prevLoan) {
+    setPrevLoan(loan);
     setError("");
   }
 
   async function handleDelete() {
-    if (!account) return;
+    if (!loan) return;
 
     setError("");
     setIsDeleting(true);
 
     try {
-      await deleteAccount(account.id);
+      await deleteLoan(loan.id);
       onOpenChange(false);
       onSuccess();
     } catch (err) {
-      if (err instanceof ApiError && err.status === 409) {
-        setError(
-          "This account has existing transactions and can't be deleted. Archive it instead.",
-        );
+      if (err instanceof ApiError && err.status === 400) {
+        setError("This loan has payments and can't be deleted.");
       } else {
-        setError("Failed to delete account. Please try again.");
+        setError("Failed to delete loan. Please try again.");
       }
     } finally {
       setIsDeleting(false);
@@ -59,13 +57,13 @@ export default function DeleteAccountDialog({
   }
 
   return (
-    <AlertDialog open={!!account} onOpenChange={onOpenChange}>
+    <AlertDialog open={!!loan} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete account</AlertDialogTitle>
+          <AlertDialogTitle>Delete loan</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{account?.name}&quot;? This
-            action cannot be undone.
+            Are you sure you want to delete the loan with &quot;
+            {loan?.personName}&quot;? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
 

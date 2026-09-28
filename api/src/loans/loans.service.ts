@@ -14,6 +14,7 @@ import { LoanPayment } from '../database/entities/loan-payment.entity';
 import { Transaction } from '../database/entities/transaction.entity';
 import { LoanType } from '../database/enums/loan-type.enum';
 import { TransactionType } from '../database/enums/transaction-type.enum';
+import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class LoansService {
@@ -29,6 +30,8 @@ export class LoansService {
 
     @InjectRepository(LoanPayment)
     private readonly loanPaymentRepository: Repository<LoanPayment>,
+
+    private readonly transactionsService: TransactionsService,
 
     private readonly dataSource: DataSource,
   ) {}
@@ -143,12 +146,12 @@ export class LoansService {
         currency: createLoanDto.currency,
         date: new Date(createLoanDto.date),
         description: `Loan created: ${createLoanDto.personName}`,
+        loan: { id: savedLoan.id },
       });
-
-      await queryRunner.manager.save(Transaction, transaction);
 
       account.currentBalance = newBalance.toFixed(2);
 
+      await queryRunner.manager.save(Transaction, transaction);
       await queryRunner.manager.save(Account, account);
 
       await queryRunner.commitTransaction();
@@ -224,13 +227,26 @@ export class LoansService {
     const loan = await this.findOneForUser(loanId, userId);
 
     if (loan.payments.length > 0) {
-      throw new BadRequestException('Loan with payments cannot be deleted');
+      throw new BadRequestException(
+        'This loan has payments. Cancel its payments first.',
+      );
     }
 
-    await this.loanRepository.remove(loan);
+    const creationTransaction = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.loanId = :loanId', { loanId })
+      .andWhere(
+        'transaction.id NOT IN (SELECT "transactionId" FROM loan_payments)',
+      )
+      .getOne();
 
-    return {
-      message: 'Loan deleted successfully',
-    };
+    if (!creationTransaction) {
+      await this.loanRepository.remove(loan);
+      return { message: 'Loan deleted successfully' };
+    }
+
+    await this.transactionsService.remove(creationTransaction.id, userId);
+
+    return { message: 'Loan deleted successfully' };
   }
 }

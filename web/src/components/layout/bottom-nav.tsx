@@ -11,7 +11,7 @@ export function BottomNav() {
   if (!isMobile) return null;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-around border-t bg-background py-2">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t bg-background pb-[env(safe-area-inset-bottom)]">
       {navItems.map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href;
 
@@ -20,14 +20,15 @@ export function BottomNav() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-col items-center gap-1 rounded-full px-3 py-1.5 text-xs transition-colors",
+              "flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2 text-xs transition-colors",
               isActive
-                ? "bg-primary/10 text-primary"
+                ? "text-primary"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon className="size-5" />
-            <span>{label}</span>
+            <Icon className="size-5 shrink-0" />
+
+            <span className="max-w-full truncate">{label}</span>
           </Link>
         );
       })}

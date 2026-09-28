@@ -28,6 +28,12 @@ export default function DeleteCategoryDialog({
 }: DeleteCategoryDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [prevCategory, setPrevCategory] = useState(category);
+
+  if (category !== prevCategory) {
+    setPrevCategory(category);
+    setError("");
+  }
 
   async function handleDelete() {
     if (!category) return;

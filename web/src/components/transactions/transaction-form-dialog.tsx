@@ -96,10 +96,21 @@ export default function TransactionFormDialog({
         getAccounts(),
         getCategories(),
       ]);
-      setAccounts(accountsData.filter((a) => !a.isArchived));
-      setCategories(categoriesData.filter((c) => !c.isArchived));
+      setAccounts(
+        accountsData.filter(
+          (a) =>
+            !a.isArchived ||
+            a.id === transaction?.account.id ||
+            a.id === transaction?.transferToAccount?.id,
+        ),
+      );
+      setCategories(
+        categoriesData.filter(
+          (c) => !c.isArchived || c.id === transaction?.category?.id,
+        ),
+      );
     })();
-  }, [open]);
+  }, [open, transaction]);
 
   function validate(): boolean {
     const errors: Record<string, string> = {};

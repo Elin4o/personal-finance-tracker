@@ -16,6 +16,7 @@ export type Transaction = {
   category: Category | null;
   createdAt: string;
   updatedAt: string;
+  loan: { id: string; personName: string } | null;
 };
 
 export type TransactionsResponse = {

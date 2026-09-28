@@ -27,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Transaction, getTransactions } from "@/lib/transactions-api";
+import { Badge } from "@/components/ui/badge";
 
 function formatAmount(transaction: Transaction) {
   const value = parseFloat(transaction.amount).toFixed(2);
@@ -47,6 +48,10 @@ function TypeIcon({ type }: { type: Transaction["type"] }) {
   if (type === "EXPENSE")
     return <ArrowUpRight className="size-4 text-destructive" />;
   return <ArrowLeftRight className="size-4 text-muted-foreground" />;
+}
+
+function accountLabel(account: Transaction["account"]) {
+  return account.isArchived ? `${account.name} (archived)` : account.name;
 }
 
 export default function TransactionsPage() {
@@ -120,11 +125,15 @@ export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       {transactions.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             All your income, expenses, and transfers.
           </p>
-          <Button onClick={openCreateDialog}>
+
+          <Button
+            className="h-11 shrink-0 px-4 md:h-10"
+            onClick={openCreateDialog}
+          >
             <Plus className="size-4" />
             Add transaction
           </Button>
@@ -182,10 +191,16 @@ export default function TransactionsPage() {
                     </TableCell>
                     <TableCell>
                       {transaction.type === "TRANSFER"
-                        ? `${transaction.account.name} → ${transaction.transferToAccount?.name ?? "—"}`
-                        : transaction.account.name}
+                        ? `${accountLabel(transaction.account)} → ${transaction.transferToAccount ? accountLabel(transaction.transferToAccount) : "—"}`
+                        : accountLabel(transaction.account)}
                     </TableCell>
-                    <TableCell>{transaction.category?.name ?? "—"}</TableCell>
+                    <TableCell>
+                      {transaction.loan ? (
+                        <Badge variant="outline">Loan</Badge>
+                      ) : (
+                        (transaction.category?.name ?? "—")
+                      )}
+                    </TableCell>
                     <TableCell className="max-w-48 truncate text-muted-foreground">
                       {transaction.description ?? "—"}
                     </TableCell>
@@ -202,11 +217,13 @@ export default function TransactionsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => openEditDialog(transaction)}
-                          >
-                            Edit
-                          </DropdownMenuItem>
+                          {!transaction.loan && (
+                            <DropdownMenuItem
+                              onClick={() => openEditDialog(transaction)}
+                            >
+                              Edit
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem
                             onClick={() => setDeletingTransaction(transaction)}
                           >
@@ -234,16 +251,20 @@ export default function TransactionsPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         {transaction.type === "TRANSFER"
-                          ? `${transaction.account.name} → ${
-                              transaction.transferToAccount?.name ?? "—"
+                          ? `${accountLabel(transaction.account)} → ${
+                              transaction.transferToAccount
+                                ? accountLabel(transaction.transferToAccount)
+                                : "—"
                             }`
-                          : transaction.account.name}
+                          : accountLabel(transaction.account)}
                       </p>
 
                       <p className="truncate text-xs text-muted-foreground">
                         {new Date(transaction.date).toLocaleDateString()}
-                        {transaction.category &&
-                          ` · ${transaction.category.name}`}
+                        {transaction.loan
+                          ? " · Loan"
+                          : transaction.category &&
+                            ` · ${transaction.category.name}`}
                       </p>
                     </div>
                   </div>
@@ -255,11 +276,13 @@ export default function TransactionsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => openEditDialog(transaction)}
-                      >
-                        Edit
-                      </DropdownMenuItem>
+                      {!transaction.loan && (
+                        <DropdownMenuItem
+                          onClick={() => openEditDialog(transaction)}
+                        >
+                          Edit
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => setDeletingTransaction(transaction)}
                       >
@@ -271,7 +294,7 @@ export default function TransactionsPage() {
 
                 {transaction.description && (
                   <div className="mt-2 w-full overflow-hidden">
-                    <p className="text-sm text-muted-foreground break-all">
+                    <p className="text-sm text-muted-foreground break-words">
                       {transaction.description}
                     </p>
                   </div>

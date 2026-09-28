@@ -90,10 +90,19 @@ export async function apiFetch<T>(
       setAccessToken(null);
     }
 
-    throw new ApiError(
-      response.status,
-      `API request failed: ${response.status}`,
-    );
+    let message = `API request failed: ${response.status}`;
+    try {
+      const body = (await response.json()) as { message?: string | string[] };
+      if (body.message) {
+        message = Array.isArray(body.message)
+          ? body.message.join(", ")
+          : body.message;
+      }
+    } catch {
+      message = `API request failed: ${response.status}`;
+    }
+
+    throw new ApiError(response.status, message);
   }
   return response.json();
 }

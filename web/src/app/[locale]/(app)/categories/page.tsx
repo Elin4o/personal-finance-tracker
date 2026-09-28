@@ -88,11 +88,11 @@ export default function CategoriesPage() {
   return (
     <div className="space-y-6">
       {categories.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-muted-foreground">
             Organize your transactions into income and expense categories.
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:justify-end">
             <div className="flex items-center gap-2">
               <Switch
                 id="show-archived"
@@ -106,7 +106,8 @@ export default function CategoriesPage() {
                 Show archived
               </Label>
             </div>
-            <Button onClick={openCreateDialog}>
+
+            <Button className="h-11 px-4 md:h-10" onClick={openCreateDialog}>
               <Plus className="size-4" />
               Add category
             </Button>

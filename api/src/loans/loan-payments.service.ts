@@ -154,6 +154,7 @@ export class LoanPaymentsService {
         date: new Date(createLoanPaymentDto.date),
         description:
           createLoanPaymentDto.note ?? `Loan payment: ${loan.personName}`,
+        loan: { id: loan.id },
       });
 
       const savedTransaction = await queryRunner.manager.save(
@@ -176,13 +177,13 @@ export class LoanPaymentsService {
         loanPayment,
       );
 
+      account.currentBalance = newAccountBalance.toFixed(2);
+      loan.currentLoanBalance = newLoanBalance.toFixed(2);
+
       await queryRunner.manager.save(Account, account);
       await queryRunner.manager.save(Loan, loan);
 
       await queryRunner.commitTransaction();
-
-      account.currentBalance = newAccountBalance.toFixed(2);
-      loan.currentLoanBalance = newLoanBalance.toFixed(2);
 
       return savedLoanPayment;
     } catch (error) {

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,6 +15,8 @@ import { QueryTransactionsDto } from './dto/query-transactions.dto';
 import { TransactionType } from '../database/enums/transaction-type.enum';
 import { CategoryType } from '../database/enums/category-type.enum';
 import Decimal from 'decimal.js';
+import { Loan } from '../database/entities/loan.entity';
+import { LoanPayment } from '../database/entities/loan-payment.entity';
 
 @Injectable()
 export class TransactionsService {
@@ -46,6 +49,7 @@ export class TransactionsService {
       .leftJoinAndSelect('transaction.account', 'account')
       .leftJoinAndSelect('transaction.transferToAccount', 'transferToAccount')
       .leftJoinAndSelect('transaction.category', 'category')
+      .leftJoinAndSelect('transaction.loan', 'loan')
       .where('transaction.userId = :userId', { userId });
 
     if (accountId) {
@@ -195,11 +199,18 @@ export class TransactionsService {
           account: true,
           transferToAccount: true,
           category: true,
+          loan: true,
         },
       });
 
       if (!transaction) {
         throw new NotFoundException('Transaction not found');
+      }
+
+      if (transaction.loan) {
+        throw new ConflictException(
+          'This transaction belongs to a loan and cannot be edited. Delete it and record it again from Loans.',
+        );
       }
 
       const oldAccount = transaction.account;
@@ -329,11 +340,61 @@ export class TransactionsService {
         relations: {
           account: true,
           transferToAccount: true,
+          loan: true,
         },
       });
 
       if (!transaction) {
         throw new NotFoundException('Transaction not found');
+      }
+
+      let loanToDelete: Loan | null = null;
+
+      if (transaction.loan) {
+        const loan = await queryRunner.manager.findOne(Loan, {
+          where: { id: transaction.loan.id },
+          lock: { mode: 'pessimistic_write' },
+        });
+
+        if (!loan) {
+          throw new NotFoundException('Loan not found');
+        }
+
+        const payment = await queryRunner.manager.findOne(LoanPayment, {
+          where: { transaction: { id: transaction.id } },
+        });
+
+        if (payment) {
+          await queryRunner.manager.remove(LoanPayment, payment);
+
+          const remaining = await queryRunner.manager.find(LoanPayment, {
+            where: { loan: { id: loan.id } },
+          });
+
+          const paid = remaining.reduce(
+            (sum, p) => sum.plus(p.amount),
+            new Decimal(0),
+          );
+
+          loan.currentLoanBalance = Decimal.max(
+            0,
+            new Decimal(loan.amount).minus(paid),
+          ).toFixed(2);
+
+          await queryRunner.manager.save(Loan, loan);
+        } else {
+          const paymentCount = await queryRunner.manager.count(LoanPayment, {
+            where: { loan: { id: loan.id } },
+          });
+
+          if (paymentCount > 0) {
+            throw new ConflictException(
+              'This loan has payments. Cancel its payments first.',
+            );
+          }
+
+          loanToDelete = loan;
+        }
       }
 
       const account = transaction.account;
@@ -373,6 +434,10 @@ export class TransactionsService {
       }
 
       await queryRunner.manager.remove(Transaction, transaction);
+
+      if (loanToDelete) {
+        await queryRunner.manager.remove(Loan, loanToDelete);
+      }
 
       await queryRunner.commitTransaction();
 

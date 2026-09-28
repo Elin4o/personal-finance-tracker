@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ApiError } from "@/lib/api";
 
 interface DeleteTransactionDialogProps {
   transaction: Transaction | null;
@@ -27,6 +28,12 @@ export default function DeleteTransactionDialog({
 }: DeleteTransactionDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
+  const [prevTransaction, setPrevTransaction] = useState(transaction);
+
+  if (transaction !== prevTransaction) {
+    setPrevTransaction(transaction);
+    setError("");
+  }
 
   async function handleDelete() {
     if (!transaction) return;
@@ -38,8 +45,12 @@ export default function DeleteTransactionDialog({
       await deleteTransaction(transaction.id);
       onOpenChange(false);
       onSuccess();
-    } catch {
-      setError("Failed to delete transaction. Please try again.");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setError("This loan has payments. Cancel its payments first.");
+      } else {
+        setError("Failed to delete transaction. Please try again.");
+      }
     } finally {
       setIsDeleting(false);
     }
@@ -51,8 +62,9 @@ export default function DeleteTransactionDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete transaction</AlertDialogTitle>
           <AlertDialogDescription>
-            This will reverse its effect on the account balance. This action
-            cannot be undone.
+            {transaction?.loan
+              ? `This transaction belongs to the loan with ${transaction.loan.personName}. If it's a payment, the loan's remaining balance is restored. If it's the loan's starting transaction, the loan is deleted too.`
+              : "This will reverse its effect on the account balance. This action cannot be undone."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 

@@ -6,12 +6,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { TransactionType } from '../enums/transaction-type.enum';
 import { Account } from './account.entity';
 import { Category } from './category.entity';
 import { User } from './user.entity';
 import { LoanPayment } from './loan-payment.entity';
+import { Loan } from './loan.entity';
 
 @Entity('transactions')
 export class Transaction {
@@ -35,6 +37,13 @@ export class Transaction {
 
   @Column({ type: 'text', nullable: true })
   description!: string | null;
+
+  @ManyToOne(() => Loan, {
+    nullable: true,
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'loanId' })
+  loan!: Loan | null;
 
   @ManyToOne(() => User, (user) => user.transactions, {
     nullable: false,

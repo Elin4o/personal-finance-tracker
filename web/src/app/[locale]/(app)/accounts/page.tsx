@@ -94,11 +94,12 @@ export default function AccountsPage() {
   return (
     <div className="space-y-6">
       {visibleAccounts.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-muted-foreground">
             Manage your cash, bank, and card accounts.
           </p>
-          <div className="flex items-center gap-4">
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:justify-end">
             <div className="flex items-center gap-2">
               <Switch
                 id="show-archived"
@@ -112,7 +113,8 @@ export default function AccountsPage() {
                 Show archived
               </Label>
             </div>
-            <Button onClick={openCreateDialog}>
+
+            <Button className="h-11 px-4 md:h-10" onClick={openCreateDialog}>
               <Plus className="size-4" />
               Add account
             </Button>
@@ -146,69 +148,136 @@ export default function AccountsPage() {
       )}
 
       {!isLoading && !error && visibleAccounts.length > 0 && (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Currency</TableHead>
-                <TableHead className="text-right">Balance</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {visibleAccounts.map((account) => (
-                <TableRow
-                  key={account.id}
-                  className={account.isArchived ? "opacity-50" : ""}
-                >
-                  <TableCell className="font-medium">{account.name}</TableCell>
-                  <TableCell>{ACCOUNT_TYPE_LABELS[account.type]}</TableCell>
-                  <TableCell>{account.currency}</TableCell>
-                  <TableCell className="text-right font-mono">
-                    {parseFloat(account.currentBalance).toFixed(2)}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="size-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => openEditDialog(account)}
-                        >
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            await updateAccount(account.id, {
-                              isArchived: !account.isArchived,
-                              name: account.name,
-                              type: account.type,
-                              currency: account.currency,
-                            });
-                            loadAccounts();
-                          }}
-                        >
-                          {account.isArchived ? "Unarchive" : "Archive"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={() => setDeletingAccount(account)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <>
+          <div className="hidden rounded-lg border md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Currency</TableHead>
+                  <TableHead className="text-right">Balance</TableHead>
+                  <TableHead className="w-10" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {visibleAccounts.map((account) => (
+                  <TableRow
+                    key={account.id}
+                    className={account.isArchived ? "opacity-50" : ""}
+                  >
+                    <TableCell className="font-medium">
+                      {account.name}
+                    </TableCell>
+                    <TableCell>{ACCOUNT_TYPE_LABELS[account.type]}</TableCell>
+                    <TableCell>{account.currency}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      {parseFloat(account.currentBalance).toFixed(2)}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => openEditDialog(account)}
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              await updateAccount(account.id, {
+                                isArchived: !account.isArchived,
+                                name: account.name,
+                                type: account.type,
+                                currency: account.currency,
+                              });
+                              loadAccounts();
+                            }}
+                          >
+                            {account.isArchived ? "Unarchive" : "Archive"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            variant="destructive"
+                            onClick={() => setDeletingAccount(account)}
+                          >
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="space-y-3 md:hidden">
+            {visibleAccounts.map((account) => (
+              <div
+                key={account.id}
+                className={`w-full min-w-0 rounded-lg border p-4 ${
+                  account.isArchived ? "opacity-50" : ""
+                }`}
+              >
+                <div className="flex min-w-0 items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">
+                      {account.name}
+                    </p>
+
+                    <p className="truncate text-xs text-muted-foreground">
+                      {ACCOUNT_TYPE_LABELS[account.type]} · {account.currency}
+                      {account.isArchived && " · Archived"}
+                    </p>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreVertical className="size-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => openEditDialog(account)}>
+                        Edit
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={async () => {
+                          await updateAccount(account.id, {
+                            isArchived: !account.isArchived,
+                            name: account.name,
+                            type: account.type,
+                            currency: account.currency,
+                          });
+                          loadAccounts();
+                        }}
+                      >
+                        {account.isArchived ? "Unarchive" : "Archive"}
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => setDeletingAccount(account)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                <p className="mt-2 text-right font-mono text-sm">
+                  {parseFloat(account.currentBalance).toFixed(2)}{" "}
+                  {account.currency}
+                </p>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <AccountFormDialog
