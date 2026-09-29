@@ -37,6 +37,28 @@ export type TransactionFilters = {
   dateTo?: string;
 };
 
+export async function getAllTransactions(
+  filters: TransactionFilters = {},
+  maxRecords = 500,
+): Promise<{ data: Transaction[]; truncated: boolean }> {
+  const first = await getTransactions(1, 100, filters);
+  const all = [...first.data];
+
+  for (
+    let page = 2;
+    page <= first.meta.totalPages && all.length < maxRecords;
+    page++
+  ) {
+    const next = await getTransactions(page, 100, filters);
+    all.push(...next.data);
+  }
+
+  return {
+    data: all.slice(0, maxRecords),
+    truncated: all.length < first.meta.total,
+  };
+}
+
 export function getTransactions(
   page = 1,
   limit = 20,

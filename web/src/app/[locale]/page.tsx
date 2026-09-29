@@ -1,21 +1,22 @@
 "use client";
+
+import { useEffect } from "react";
 import { useAuth } from "@/providers/auth-provider";
-import { useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function HomePage() {
-  const t = useTranslations("common");
   const router = useRouter();
-  const { user } = useAuth();
-  if (user) {
-    router.replace("/dashboard");
-  } else {
-    router.replace("/login");
-  }
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isLoading) return;
+    router.replace(user ? "/dashboard" : "/login");
+  }, [isLoading, user, router]);
 
   return (
-    <main>
-      <h1>{t("appName")}</h1>
+    <main className="flex min-h-screen items-center justify-center">
+      <Loader2 className="size-6 animate-spin text-muted-foreground" />
     </main>
   );
 }

@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
   MoreVertical,
   Plus,
+  ArrowLeft,
 } from "lucide-react";
 import TransactionFormDialog from "@/components/transactions/transaction-form-dialog";
 import DeleteTransactionDialog from "@/components/transactions/delete-transaction-dialog";
@@ -35,6 +36,8 @@ import { Badge } from "@/components/ui/badge";
 import { Account, getAccounts } from "@/lib/accounts-api";
 import { Category, getCategories } from "@/lib/categories-api";
 import TransactionFiltersBar from "@/components/transactions/transaction-filters";
+import { useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 
 function formatAmount(transaction: Transaction) {
   const value = parseFloat(transaction.amount).toFixed(2);
@@ -74,9 +77,26 @@ export default function TransactionsPage() {
   const [deletingTransaction, setDeletingTransaction] =
     useState<Transaction | null>(null);
 
-  const [filters, setFilters] = useState<TransactionFilters>({});
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const searchParams = useSearchParams();
+  const [cameFromDashboard] = useState(
+    () => searchParams.get("from") === "dashboard",
+  );
+  const [filters, setFilters] = useState<TransactionFilters>(() => {
+    const type = searchParams.get("type");
+    const dateFrom = searchParams.get("dateFrom");
+    const dateTo = searchParams.get("dateTo");
+
+    return {
+      type:
+        type === "INCOME" || type === "EXPENSE" || type === "TRANSFER"
+          ? type
+          : undefined,
+      dateFrom: dateFrom ?? undefined,
+      dateTo: dateTo ?? undefined,
+    };
+  });
   const hasActiveFilters = Object.values(filters).some(Boolean);
 
   function handleFiltersChange(next: TransactionFilters) {
@@ -163,6 +183,15 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-6">
+      {cameFromDashboard && (
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Back to Dashboard
+        </Link>
+      )}
       {(transactions.length > 0 || hasActiveFilters) && (
         <>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -366,7 +395,7 @@ export default function TransactionsPage() {
 
                 {transaction.description && (
                   <div className="mt-2 w-full overflow-hidden">
-                    <p className="text-sm text-muted-foreground break-words">
+                    <p className="text-sm text-muted-foreground wrap-break-word">
                       {transaction.description}
                     </p>
                   </div>
