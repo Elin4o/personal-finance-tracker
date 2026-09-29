@@ -30,6 +30,14 @@ export class TransactionsController {
     return this.transactionsService.findAllForUser(user.userId, query);
   }
 
+  @Get('earliest-date')
+  async findEarliestDate(@CurrentUser() user: AuthenticatedUser) {
+    const date = await this.transactionsService.findEarliestDateForUser(
+      user.userId,
+    );
+    return { date };
+  }
+
   @Get(':id')
   findOne(
     @Param('id') transactionId: string,

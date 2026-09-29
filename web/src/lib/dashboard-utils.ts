@@ -16,6 +16,50 @@ export function getLastMonths(count: number) {
   return months;
 }
 
+export function getMonthRange(
+  from: { year: number; month: number },
+  to: { year: number; month: number },
+) {
+  const months: { year: number; month: number; label: string }[] = [];
+  let y = from.year;
+  let m = from.month;
+
+  while (y < to.year || (y === to.year && m <= to.month)) {
+    const d = new Date(y, m, 1);
+    months.push({
+      year: y,
+      month: m,
+      label: d.toLocaleDateString(undefined, { month: "short" }),
+    });
+    m++;
+    if (m > 11) {
+      m = 0;
+      y++;
+    }
+  }
+
+  return months;
+}
+
+export function getMonthOptions(yearsBack = 3) {
+  const now = new Date();
+  const options: { year: number; month: number; label: string }[] = [];
+
+  for (let i = 0; i < yearsBack * 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    options.push({
+      year: d.getFullYear(),
+      month: d.getMonth(),
+      label: d.toLocaleDateString(undefined, {
+        month: "short",
+        year: "numeric",
+      }),
+    });
+  }
+
+  return options;
+}
+
 export function aggregateMonthly(
   transactions: Transaction[],
   months: { year: number; month: number; label: string }[],
@@ -49,14 +93,18 @@ const PALETTE = [
 export function aggregateByCategory(
   transactions: Transaction[],
   currency: string,
-  type: TransactionType,
+  type: TransactionType | "ALL",
   year: number,
   month: number,
 ) {
   const totals = new Map<string, number>();
 
   for (const t of transactions) {
-    if (t.currency !== currency || t.type !== type) continue;
+    if (t.currency !== currency) continue;
+    if (t.loan) continue;
+    if (t.type === "TRANSFER") continue;
+    if (type !== "ALL" && t.type !== type) continue;
+
     const d = new Date(t.date);
     if (d.getFullYear() !== year || d.getMonth() !== month) continue;
 

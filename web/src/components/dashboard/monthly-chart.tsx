@@ -138,8 +138,8 @@ export default function MonthlyChart({
         </BarChart>
       </ResponsiveContainer>
       {onMonthClick && (
-        <p className="mt-1 text-center text-xs text-muted-foreground pb-1">
-          Click a bar for income or expenses, or a month label for everything.
+        <p className="mt-1 text-center text-xs text-balance text-muted-foreground">
+          Tap a bar for a type, or a month for everything.
         </p>
       )}
     </div>

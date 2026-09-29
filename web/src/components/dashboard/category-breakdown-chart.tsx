@@ -53,7 +53,7 @@ export default function CategoryBreakdownChart({
         </ResponsiveContainer>
       </div>
 
-      <ul className="space-y-2 text-sm">
+      <ul className="max-w-[220px] space-y-2 text-sm">
         {data.map((entry) => (
           <li
             key={entry.name}

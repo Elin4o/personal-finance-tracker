@@ -103,6 +103,18 @@ export class TransactionsService {
     };
   }
 
+  async findEarliestDateForUser(userId: string): Promise<string | null> {
+    const earliest = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .select('transaction.date', 'date')
+      .where('transaction.userId = :userId', { userId })
+      .orderBy('transaction.date', 'ASC')
+      .limit(1)
+      .getRawOne<{ date: Date }>();
+
+    return earliest ? new Date(earliest.date).toISOString() : null;
+  }
+
   async findOneForUser(transactionId: string, userId: string) {
     const transaction = await this.transactionRepository.findOne({
       where: {

@@ -298,8 +298,19 @@ export default function TransactionsPage() {
                     <TableCell>
                       {transaction.loan ? (
                         <Badge variant="outline">Loan</Badge>
+                      ) : transaction.category ? (
+                        <Badge
+                          variant="outline"
+                          className={
+                            transaction.category.type === "INCOME"
+                              ? "border-success/30 text-success"
+                              : "border-destructive/30 text-destructive"
+                          }
+                        >
+                          {transaction.category.name}
+                        </Badge>
                       ) : (
-                        (transaction.category?.name ?? "—")
+                        "—"
                       )}
                     </TableCell>
                     <TableCell className="max-w-48 truncate text-muted-foreground">
@@ -362,10 +373,20 @@ export default function TransactionsPage() {
 
                       <p className="truncate text-xs text-muted-foreground">
                         {new Date(transaction.date).toLocaleDateString()}
-                        {transaction.loan
-                          ? " · Loan"
-                          : transaction.category &&
-                            ` · ${transaction.category.name}`}
+                        {transaction.loan ? (
+                          " · Loan"
+                        ) : transaction.category ? (
+                          <span
+                            className={
+                              transaction.category.type === "INCOME"
+                                ? "text-success"
+                                : "text-destructive"
+                            }
+                          >
+                            {" "}
+                            · {transaction.category.name}
+                          </span>
+                        ) : null}
                       </p>
                     </div>
                   </div>

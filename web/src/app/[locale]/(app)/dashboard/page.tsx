@@ -7,18 +7,14 @@ import {
   ArrowUpRight,
   ArrowLeftRight,
   HandCoins,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 import { getAccounts, type Account } from "@/lib/accounts-api";
 import { getLoans, type Loan } from "@/lib/loans-api";
-import { getAllTransactions, type Transaction } from "@/lib/transactions-api";
 import {
-  aggregateByCategory,
-  aggregateMonthly,
-  getLastMonths,
-  sumByCurrency,
-} from "@/lib/dashboard-utils";
+  getAllTransactions,
+  getEarliestTransactionDate,
+  type Transaction,
+} from "@/lib/transactions-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -30,6 +26,13 @@ import {
 import MonthlyChart from "@/components/dashboard/monthly-chart";
 import CategoryBreakdownChart from "@/components/dashboard/category-breakdown-chart";
 import { useRouter } from "@/i18n/navigation";
+import {
+  aggregateByCategory,
+  aggregateMonthly,
+  getMonthRange,
+  sumByCurrency,
+} from "@/lib/dashboard-utils";
+import MonthRangePicker from "@/components/dashboard/month-range-picker";
 
 const NOW = new Date();
 
@@ -45,11 +48,6 @@ function CurrencyRows({
   if (entries.length === 0) {
     return <p className="font-mono text-2xl font-semibold">0.00</p>;
   }
-
-  console.log({
-    activeCurrency,
-    currencies: Object.keys(totals),
-  });
 
   return (
     <div className="space-y-0.5">
@@ -75,22 +73,46 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [currency, setCurrency] = useState("");
-  const [breakdownType, setBreakdownType] = useState<"EXPENSE" | "INCOME">(
-    "EXPENSE",
-  );
   const [truncated, setTruncated] = useState(false);
-  const [monthsRange, setMonthsRange] = useState(6);
-  const MONTHS = getLastMonths(monthsRange);
-  const [categoryMonthIndex, setCategoryMonthIndex] = useState(monthsRange - 1);
-  const selectedCategoryMonth =
-    MONTHS[categoryMonthIndex] ?? MONTHS[MONTHS.length - 1];
+  function monthsAgo(n: number) {
+    const d = new Date(NOW.getFullYear(), NOW.getMonth() - n, 1);
+    return { year: d.getFullYear(), month: d.getMonth() };
+  }
+
+  const [range, setRange] = useState(() => ({
+    from: monthsAgo(5),
+    to: monthsAgo(0),
+  }));
+
+  function keyOf(year: number, month: number) {
+    return `${year}-${String(month).padStart(2, "0")}`;
+  }
+
+  const normalizedRange =
+    keyOf(range.from.year, range.from.month) <=
+    keyOf(range.to.year, range.to.month)
+      ? range
+      : { from: range.to, to: range.from };
+
+  const MONTHS = getMonthRange(normalizedRange.from, normalizedRange.to);
+  const [categoryMonthKey, setCategoryMonthKey] = useState(() => {
+    const t = monthsAgo(0);
+    return `${t.year}-${t.month}`;
+  });
+  const [selectedCategoryYear, selectedCategoryMonthNum] = categoryMonthKey
+    .split("-")
+    .map(Number);
+
+  const [breakdownType, setBreakdownType] = useState<
+    "EXPENSE" | "INCOME" | "ALL"
+  >("EXPENSE");
+
+  const [earliestMonth, setEarliestMonth] = useState<{
+    year: number;
+    month: number;
+  } | null>(null);
 
   const router = useRouter();
-
-  function handleRangeChange(range: number) {
-    setMonthsRange(range);
-    setCategoryMonthIndex(range - 1);
-  }
 
   function goToMonth(year: number, month: number, type?: "INCOME" | "EXPENSE") {
     const from = new Date(year, month, 1).toISOString().slice(0, 10);
@@ -106,32 +128,35 @@ export default function DashboardPage() {
     router.push(`/transactions?${params.toString()}`);
   }
 
+  function handleRangeChange(next: {
+    from: { year: number; month: number };
+    to: { year: number; month: number };
+  }) {
+    const scrollY = window.scrollY;
+    setRange(next);
+    requestAnimationFrame(() => window.scrollTo(0, scrollY));
+  }
+
   useEffect(() => {
     let ignore = false;
 
     async function run() {
       try {
-        const months = getLastMonths(monthsRange);
-        const dateFrom = new Date(months[0].year, months[0].month, 1)
-          .toISOString()
-          .slice(0, 10);
-
-        const [accountsData, loansData] = await Promise.all([
+        const [accountsData, loansData, earliestDate] = await Promise.all([
           getAccounts(),
           getLoans(),
+          getEarliestTransactionDate(),
         ]);
-
-        const { data: transactionsData, truncated: isTruncated } =
-          await getAllTransactions({
-            dateFrom,
-          });
 
         if (ignore) return;
 
         setAccounts(accountsData);
-        setTransactions(transactionsData);
-        setTruncated(isTruncated);
         setLoans(loansData);
+
+        if (earliestDate) {
+          const d = new Date(earliestDate);
+          setEarliestMonth({ year: d.getFullYear(), month: d.getMonth() });
+        }
 
         const activeAccounts = accountsData.filter((a) => !a.isArchived);
         const totals = sumByCurrency(
@@ -143,8 +168,36 @@ export default function DashboardPage() {
         const bestCurrency = Object.entries(totals).sort(
           (a, b) => b[1] - a[1],
         )[0]?.[0];
-
         setCurrency((current) => current || bestCurrency || "EUR");
+      } catch {
+        if (!ignore) setError("Failed to load dashboard data.");
+      }
+    }
+
+    void run();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function run() {
+      setIsLoading(true);
+      try {
+        const dateFrom = new Date(range.from.year, range.from.month, 1)
+          .toISOString()
+          .slice(0, 10);
+
+        const { data: transactionsData, truncated: isTruncated } =
+          await getAllTransactions({ dateFrom });
+
+        if (ignore) return;
+
+        setTransactions(transactionsData);
+        setTruncated(isTruncated);
       } catch {
         if (!ignore) setError("Failed to load dashboard data.");
       } finally {
@@ -157,7 +210,17 @@ export default function DashboardPage() {
     return () => {
       ignore = true;
     };
-  }, [monthsRange]);
+  }, [range]);
+  const [prevRange, setPrevRange] = useState(range);
+
+  if (range !== prevRange) {
+    setPrevRange(range);
+    const last = MONTHS[MONTHS.length - 1];
+    const inRange = MONTHS.some(
+      (m) => `${m.year}-${m.month}` === categoryMonthKey,
+    );
+    if (!inRange && last) setCategoryMonthKey(`${last.year}-${last.month}`);
+  }
 
   if (isLoading) {
     return (
@@ -189,18 +252,23 @@ export default function DashboardPage() {
     ? aggregateMonthly(transactions, MONTHS, currency)
     : [];
 
-  const thisMonth = monthlyData[monthlyData.length - 1] ?? {
-    income: 0,
-    expense: 0,
-  };
+  const currentMonthPoint = currency
+    ? aggregateMonthly(
+        transactions,
+        [{ year: NOW.getFullYear(), month: NOW.getMonth(), label: "" }],
+        currency,
+      )[0]
+    : undefined;
+
+  const thisMonth = currentMonthPoint ?? { income: 0, expense: 0 };
 
   const categoryData = currency
     ? aggregateByCategory(
         transactions,
         currency,
         breakdownType,
-        selectedCategoryMonth.year,
-        selectedCategoryMonth.month,
+        selectedCategoryYear,
+        selectedCategoryMonthNum,
       )
     : [];
 
@@ -289,36 +357,30 @@ export default function DashboardPage() {
       </div>
 
       <div className="rounded-lg border p-4">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <h2 className="font-medium">Income vs expenses</h2>
-          <div className="flex items-center gap-2">
-            <div className="flex rounded-md border p-0.5 text-sm">
-              {[3, 6, 12].map((range) => (
-                <button
-                  key={range}
-                  type="button"
-                  onClick={() => handleRangeChange(range)}
-                  className={`rounded px-2.5 py-1 ${monthsRange === range ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
-                >
-                  {range}
-                </button>
-              ))}
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <MonthRangePicker
+              from={range.from}
+              to={range.to}
+              earliest={earliestMonth}
+              onChange={handleRangeChange}
+            />
+            {currencies.length > 1 && (
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger className="h-9 w-24">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  {currencies.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {c}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
-          {currencies.length > 1 && (
-            <Select value={currency} onValueChange={setCurrency}>
-              <SelectTrigger className="h-9 w-28">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                {currencies.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
         </div>
         {currency ? (
           <MonthlyChart
@@ -340,51 +402,49 @@ export default function DashboardPage() {
       )}
 
       <div className="rounded-lg border p-4">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-medium">By category</h2>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setCategoryMonthIndex((i) => Math.max(0, i - 1))}
-                disabled={categoryMonthIndex === 0}
-                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
-                aria-label="Previous month"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <span className="min-w-16 text-center text-sm text-muted-foreground">
-                {selectedCategoryMonth.label} {selectedCategoryMonth.year}
-              </span>
-              <button
-                type="button"
-                onClick={() =>
-                  setCategoryMonthIndex((i) =>
-                    Math.min(MONTHS.length - 1, i + 1),
-                  )
-                }
-                disabled={categoryMonthIndex === MONTHS.length - 1}
-                className="rounded p-1 text-muted-foreground hover:bg-muted disabled:opacity-30"
-                aria-label="Next month"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </div>
+            <Select
+              value={categoryMonthKey}
+              onValueChange={setCategoryMonthKey}
+            >
+              <SelectTrigger className="h-9 w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {MONTHS.map((m) => (
+                  <SelectItem
+                    key={`${m.year}-${m.month}`}
+                    value={`${m.year}-${m.month}`}
+                  >
+                    {m.label} {m.year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex rounded-md border p-0.5 text-sm">
             <button
               type="button"
               onClick={() => setBreakdownType("EXPENSE")}
-              className={`rounded px-3 py-1 ${breakdownType === "EXPENSE" ? "bg-destructive/10 text-destructive" : "text-muted-foreground"}`}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "EXPENSE" ? "bg-destructive/10 text-destructive" : "text-muted-foreground"}`}
             >
               Expenses
             </button>
             <button
               type="button"
               onClick={() => setBreakdownType("INCOME")}
-              className={`rounded px-3 py-1 ${breakdownType === "INCOME" ? "bg-success/10 text-success" : "text-muted-foreground"}`}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "INCOME" ? "bg-success/10 text-success" : "text-muted-foreground"}`}
             >
               Income
+            </button>
+            <button
+              type="button"
+              onClick={() => setBreakdownType("ALL")}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "ALL" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+            >
+              All
             </button>
           </div>
         </div>

@@ -59,6 +59,13 @@ export async function getAllTransactions(
   };
 }
 
+export async function getEarliestTransactionDate(): Promise<string | null> {
+  const result = await apiGet<{ date: string | null }>(
+    "/transactions/earliest-date",
+  );
+  return result.date;
+}
+
 export function getTransactions(
   page = 1,
   limit = 20,
