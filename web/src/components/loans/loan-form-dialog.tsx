@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type SubmitEvent } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { Loan, createLoan, updateLoan, type LoanType } from "@/lib/loans-api";
 import { getAccounts, type Account } from "@/lib/accounts-api";
 import { ApiError } from "@/lib/api";
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Link } from "@/i18n/navigation";
 
 interface LoanDialogProps {
   open: boolean;
@@ -92,6 +93,8 @@ export default function LoanFormDialog({
       setAccounts(data.filter((a) => !a.isArchived));
     })();
   }, [open, loan]);
+
+  const hasNoAccounts = open && !loan && accounts.length === 0;
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
@@ -175,174 +178,187 @@ export default function LoanFormDialog({
               : "Record money you've lent or borrowed."}
           </DialogDescription>
         </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
-            <Select
-              value={type}
-              onValueChange={(value) => setType(value as LoanType)}
-            >
-              <SelectTrigger id="type" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                <SelectItem value="LENT">I lent money</SelectItem>
-                <SelectItem value="BORROWED">I borrowed money</SelectItem>
-              </SelectContent>
-            </Select>
+        {hasNoAccounts ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <Wallet className="size-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Loans need a linked account to track the money in or out.
+            </p>
+            <Button asChild className="h-11 px-4 md:h-10">
+              <Link href="/accounts">Go to Accounts</Link>
+            </Button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="personName">Person</Label>
-            <Input
-              id="personName"
-              value={personName}
-              onChange={(event) => setPersonName(event.target.value)}
-              maxLength={200}
-              placeholder="e.g. John Doe"
-              className={fieldErrors.personName ? "border-destructive" : ""}
-            />
-            {fieldErrors.personName && (
-              <p className="text-xs text-destructive">
-                {fieldErrors.personName}
-              </p>
-            )}
-          </div>
-
-          {!loan && (
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="accountId">Account</Label>
-              <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger
-                  id="accountId"
-                  className={`w-full ${fieldErrors.accountId ? "border-destructive" : ""}`}
-                >
-                  <SelectValue placeholder="Select an account" />
+              <Label htmlFor="type">Type</Label>
+              <Select
+                value={type}
+                onValueChange={(value) => setType(value as LoanType)}
+              >
+                <SelectTrigger id="type" className="w-full">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.name} ({account.currency})
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="LENT">I lent money</SelectItem>
+                  <SelectItem value="BORROWED">I borrowed money</SelectItem>
                 </SelectContent>
               </Select>
-              {fieldErrors.accountId && (
-                <p className="text-xs text-destructive">
-                  {fieldErrors.accountId}
-                </p>
-              )}
             </div>
-          )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
+              <Label htmlFor="personName">Person</Label>
               <Input
-                id="amount"
-                inputMode="decimal"
-                value={amount}
-                disabled={hasPayments}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  if (/^\d*\.?\d{0,2}$/.test(value)) setAmount(value);
-                }}
-                className={fieldErrors.amount ? "border-destructive" : ""}
+                id="personName"
+                value={personName}
+                onChange={(event) => setPersonName(event.target.value)}
+                maxLength={200}
+                placeholder="e.g. John Doe"
+                className={fieldErrors.personName ? "border-destructive" : ""}
               />
-              {fieldErrors.amount && (
-                <p className="text-xs text-destructive">{fieldErrors.amount}</p>
+              {fieldErrors.personName && (
+                <p className="text-xs text-destructive">
+                  {fieldErrors.personName}
+                </p>
               )}
             </div>
 
             {!loan && (
               <div className="space-y-2">
-                <Label htmlFor="currency">Currency</Label>
-                <Input
-                  id="currency"
-                  value={currency}
-                  onChange={(event) =>
-                    setCurrency(event.target.value.toUpperCase())
-                  }
-                  maxLength={3}
-                  placeholder="EUR"
-                  className={fieldErrors.currency ? "border-destructive" : ""}
-                />
-                {fieldErrors.currency && (
+                <Label htmlFor="accountId">Account</Label>
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger
+                    id="accountId"
+                    className={`w-full ${fieldErrors.accountId ? "border-destructive" : ""}`}
+                  >
+                    <SelectValue placeholder="Select an account" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldErrors.accountId && (
                   <p className="text-xs text-destructive">
-                    {fieldErrors.currency}
+                    {fieldErrors.accountId}
                   </p>
                 )}
               </div>
             )}
-          </div>
 
-          {hasPayments && (
-            <p className="text-xs text-muted-foreground">
-              Amount and currency can&apos;t be changed after payments have been
-              made.
-            </p>
-          )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  inputMode="decimal"
+                  value={amount}
+                  disabled={hasPayments}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (/^\d*\.?\d{0,2}$/.test(value)) setAmount(value);
+                  }}
+                  className={fieldErrors.amount ? "border-destructive" : ""}
+                />
+                {fieldErrors.amount && (
+                  <p className="text-xs text-destructive">
+                    {fieldErrors.amount}
+                  </p>
+                )}
+              </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="dueDate">Due date (optional)</Label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={dueDate}
-                onChange={(event) => setDueDate(event.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength={1000}
-              rows={2}
-            />
-          </div>
-
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-
-          <DialogFooter>
-            <Button
-              className="h-11 px-4 md:h-10"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving...
-                </>
-              ) : loan ? (
-                "Save changes"
-              ) : (
-                "Add loan"
+              {!loan && (
+                <div className="space-y-2">
+                  <Label htmlFor="currency">Currency</Label>
+                  <Input
+                    id="currency"
+                    value={currency}
+                    onChange={(event) =>
+                      setCurrency(event.target.value.toUpperCase())
+                    }
+                    maxLength={3}
+                    placeholder="EUR"
+                    className={fieldErrors.currency ? "border-destructive" : ""}
+                  />
+                  {fieldErrors.currency && (
+                    <p className="text-xs text-destructive">
+                      {fieldErrors.currency}
+                    </p>
+                  )}
+                </div>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
+            </div>
+
+            {hasPayments && (
+              <p className="text-xs text-muted-foreground">
+                Amount and currency can&apos;t be changed after payments have
+                been made.
+              </p>
+            )}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="dueDate">Due date (optional)</Label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={dueDate}
+                  onChange={(event) => setDueDate(event.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (optional)</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                maxLength={1000}
+                rows={2}
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
+
+            <DialogFooter>
+              <Button
+                className="h-11 px-4 md:h-10"
+                type="submit"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : loan ? (
+                  "Save changes"
+                ) : (
+                  "Add loan"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );

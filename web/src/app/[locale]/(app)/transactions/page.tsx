@@ -338,6 +338,7 @@ export default function TransactionsPage() {
                           )}
                           <DropdownMenuItem
                             onClick={() => setDeletingTransaction(transaction)}
+                            variant="destructive"
                           >
                             Delete
                           </DropdownMenuItem>
@@ -406,6 +407,7 @@ export default function TransactionsPage() {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
+                        variant="destructive"
                         onClick={() => setDeletingTransaction(transaction)}
                       >
                         Delete

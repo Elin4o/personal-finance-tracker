@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "../ui/switch";
 
 const ALL = "all";
 
@@ -196,6 +197,21 @@ export default function TransactionFiltersBar({
               onChange({ ...filters, dateTo: event.target.value || undefined })
             }
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs text-muted-foreground">Loans</Label>
+          <div className="flex h-11 items-center gap-2 md:h-10">
+            <Switch
+              id="filter-loan"
+              checked={filters.loanOnly ?? false}
+              onCheckedChange={(checked) =>
+                onChange({ ...filters, loanOnly: checked || undefined })
+              }
+            />
+            <Label htmlFor="filter-loan" className="text-sm font-normal">
+              Payments only
+            </Label>
+          </div>
         </div>
       </div>
 

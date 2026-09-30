@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -30,6 +31,11 @@ export class QueryTransactionsDto {
   @IsOptional()
   @IsDateString()
   dateTo?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  loanOnly?: boolean;
 
   @IsOptional()
   @Type(() => Number)

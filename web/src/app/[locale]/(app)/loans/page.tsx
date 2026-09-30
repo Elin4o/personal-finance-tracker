@@ -165,7 +165,10 @@ export default function LoansPage() {
                       <DropdownMenuItem onClick={() => openEditDialog(loan)}>
                         Edit
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDeletingLoan(loan)}>
+                      <DropdownMenuItem
+                        onClick={() => setDeletingLoan(loan)}
+                        variant="destructive"
+                      >
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>

@@ -82,6 +82,10 @@ export class TransactionsService {
       });
     }
 
+    if (query.loanOnly) {
+      queryBuilder.andWhere('transaction.loanId IS NOT NULL');
+    }
+
     const skip = (page - 1) * limit;
 
     queryBuilder

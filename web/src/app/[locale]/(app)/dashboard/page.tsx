@@ -33,6 +33,8 @@ import {
   sumByCurrency,
 } from "@/lib/dashboard-utils";
 import MonthRangePicker from "@/components/dashboard/month-range-picker";
+import { Category, getCategories } from "@/lib/categories-api";
+import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
 
 const NOW = new Date();
 
@@ -74,6 +76,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [currency, setCurrency] = useState("");
   const [truncated, setTruncated] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   function monthsAgo(n: number) {
     const d = new Date(NOW.getFullYear(), NOW.getMonth() - n, 1);
     return { year: d.getFullYear(), month: d.getMonth() };
@@ -142,16 +145,19 @@ export default function DashboardPage() {
 
     async function run() {
       try {
-        const [accountsData, loansData, earliestDate] = await Promise.all([
-          getAccounts(),
-          getLoans(),
-          getEarliestTransactionDate(),
-        ]);
+        const [accountsData, loansData, earliestDate, categoriesData] =
+          await Promise.all([
+            getAccounts(),
+            getLoans(),
+            getEarliestTransactionDate(),
+            getCategories(),
+          ]);
 
         if (ignore) return;
 
         setAccounts(accountsData);
         setLoans(loansData);
+        setCategories(categoriesData);
 
         if (earliestDate) {
           const d = new Date(earliestDate);
@@ -294,8 +300,23 @@ export default function DashboardPage() {
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 6);
 
+  const onboardingSteps = [
+    { label: "Add an account", href: "/accounts", done: accounts.length > 0 },
+    {
+      label: "Add a category",
+      href: "/categories",
+      done: categories.length > 0,
+    },
+    {
+      label: "Record your first transaction",
+      href: "/transactions",
+      done: transactions.length > 0,
+    },
+  ];
+
   return (
     <div className="space-y-6">
+      <OnboardingChecklist steps={onboardingSteps} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border p-4">
           <p className="text-sm text-muted-foreground">Total balance</p>

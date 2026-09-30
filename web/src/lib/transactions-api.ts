@@ -35,6 +35,7 @@ export type TransactionFilters = {
   categoryId?: string;
   dateFrom?: string;
   dateTo?: string;
+  loanOnly?: boolean;
 };
 
 export async function getAllTransactions(
@@ -82,6 +83,7 @@ export function getTransactions(
   if (filters.dateFrom)
     params.set("dateFrom", `${filters.dateFrom}T00:00:00.000Z`);
   if (filters.dateTo) params.set("dateTo", `${filters.dateTo}T23:59:59.999Z`);
+  if (filters.loanOnly) params.set("loanOnly", "true");
 
   return apiGet<TransactionsResponse>(`/transactions?${params.toString()}`);
 }

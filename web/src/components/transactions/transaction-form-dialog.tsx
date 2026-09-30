@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { positiveAmount, required } from "@/lib/validation";
+import { Link } from "@/i18n/navigation";
+import { Wallet } from "lucide-react";
 
 interface TransactionDialogProps {
   open: boolean;
@@ -160,6 +162,9 @@ export default function TransactionFormDialog({
     return Object.keys(errors).length === 0;
   }
 
+  const hasNoAccounts = open && !transaction && accounts.length === 0;
+  const transferDestinations = accounts.filter((a) => a.id !== accountId);
+
   const selectedAccount = accounts.find((a) => a.id === accountId);
   const relevantCategories = categories.filter((c) => c.type === type);
 
@@ -216,188 +221,246 @@ export default function TransactionFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
-            <Select
-              value={type}
-              onValueChange={(value) => {
-                setType(value as TransactionType);
-                setCategoryId("");
-                setFieldErrors({});
-              }}
-            >
-              <SelectTrigger id="type" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                <SelectItem value="INCOME">Income</SelectItem>
-                <SelectItem value="EXPENSE">Expense</SelectItem>
-                <SelectItem value="TRANSFER">Transfer</SelectItem>
-              </SelectContent>
-            </Select>
+        {hasNoAccounts ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <Wallet className="size-8 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Add your first account to start recording transactions.
+            </p>
+            <Button asChild className="h-11 px-4 md:h-10">
+              <Link href="/accounts">Go to Accounts</Link>
+            </Button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="accountId">
-              {type === "TRANSFER" ? "From account" : "Account"}
-            </Label>
-            <Select value={accountId} onValueChange={setAccountId}>
-              <SelectTrigger
-                id="accountId"
-                className={`w-full ${
-                  fieldErrors.accountId ? "border-destructive" : ""
-                }`}
-              >
-                <SelectValue placeholder="Select an account" />
-              </SelectTrigger>
-              <SelectContent position="popper">
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    {account.name} ({account.currency})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {fieldErrors.accountId && (
-              <p className="text-xs text-destructive">
-                {fieldErrors.accountId}
-              </p>
-            )}
-          </div>
-
-          {type === "TRANSFER" ? (
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="transferToAccountId">To account</Label>
+              <Label htmlFor="type">Type</Label>
               <Select
-                value={transferToAccountId}
-                onValueChange={setTransferToAccountId}
+                value={type}
+                onValueChange={(value) => {
+                  setType(value as TransactionType);
+                  setCategoryId("");
+                  setFieldErrors({});
+                }}
               >
-                <SelectTrigger
-                  id="transferToAccountId"
-                  className={`w-full ${
-                    fieldErrors.transferToAccountId ? "border-destructive" : ""
-                  }`}
-                >
-                  <SelectValue placeholder="Select destination account" />
+                <SelectTrigger id="type" className="w-full">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  {accounts
-                    .filter((a) => a.id !== accountId)
-                    .map((account) => (
-                      <SelectItem key={account.id} value={account.id}>
-                        {account.name} ({account.currency})
-                      </SelectItem>
-                    ))}
+                  <SelectItem value="INCOME">Income</SelectItem>
+                  <SelectItem value="EXPENSE">Expense</SelectItem>
+                  <SelectItem value="TRANSFER">Transfer</SelectItem>
                 </SelectContent>
               </Select>
-              {fieldErrors.transferToAccountId && (
-                <p className="text-xs text-destructive">
-                  {fieldErrors.transferToAccountId}
-                </p>
-              )}
             </div>
-          ) : (
+
             <div className="space-y-2">
-              <Label htmlFor="categoryId">Category</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
+              <Label htmlFor="accountId">
+                {type === "TRANSFER" ? "From account" : "Account"}
+              </Label>
+              <Select value={accountId} onValueChange={setAccountId}>
                 <SelectTrigger
-                  id="categoryId"
+                  id="accountId"
                   className={`w-full ${
-                    fieldErrors.categoryId ? "border-destructive" : ""
+                    fieldErrors.accountId ? "border-destructive" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder="Select an account" />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  {relevantCategories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      {account.name} ({account.currency})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {fieldErrors.categoryId && (
+              {fieldErrors.accountId && (
                 <p className="text-xs text-destructive">
-                  {fieldErrors.categoryId}
+                  {fieldErrors.accountId}
                 </p>
               )}
             </div>
-          )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
-              <Input
-                id="amount"
-                inputMode="decimal"
-                value={amount}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  if (/^\d*\.?\d{0,2}$/.test(value)) {
-                    setAmount(value);
-                  }
-                }}
-                className={fieldErrors.amount ? "border-destructive" : ""}
-                required
-              />
-              {fieldErrors.amount && (
-                <p className="text-xs text-destructive">{fieldErrors.amount}</p>
-              )}
+            {type === "TRANSFER" ? (
+              <div className="space-y-2">
+                <Label htmlFor="transferToAccountId">To account</Label>
+                <Select
+                  value={transferToAccountId}
+                  onValueChange={setTransferToAccountId}
+                  disabled={transferDestinations.length === 0}
+                >
+                  <SelectTrigger
+                    id="transferToAccountId"
+                    className={`w-full ${
+                      fieldErrors.transferToAccountId
+                        ? "border-destructive"
+                        : ""
+                    }`}
+                  >
+                    <SelectValue
+                      placeholder={
+                        transferDestinations.length === 0
+                          ? "No other accounts yet"
+                          : "Select destination account"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {transferDestinations.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.name} ({account.currency})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {transferDestinations.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    You need a second account to make a transfer —{" "}
+                    <Link
+                      href="/accounts"
+                      className="text-primary hover:underline"
+                    >
+                      add one here
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  fieldErrors.transferToAccountId && (
+                    <p className="text-xs text-destructive">
+                      {fieldErrors.transferToAccountId}
+                    </p>
+                  )
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="categoryId">Category</Label>
+                <Select
+                  value={categoryId}
+                  onValueChange={setCategoryId}
+                  disabled={relevantCategories.length === 0}
+                >
+                  <SelectTrigger
+                    id="categoryId"
+                    className={`w-full ${
+                      fieldErrors.categoryId ? "border-destructive" : ""
+                    }`}
+                  >
+                    <SelectValue
+                      placeholder={
+                        relevantCategories.length === 0
+                          ? "No categories yet"
+                          : "Select a category"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {relevantCategories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {relevantCategories.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    You need a {type === "INCOME" ? "income" : "expense"}{" "}
+                    category first —{" "}
+                    <Link
+                      href="/categories"
+                      className="text-primary hover:underline"
+                    >
+                      add one here
+                    </Link>
+                    .
+                  </p>
+                ) : (
+                  fieldErrors.categoryId && (
+                    <p className="text-xs text-destructive">
+                      {fieldErrors.categoryId}
+                    </p>
+                  )
+                )}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (/^\d*\.?\d{0,2}$/.test(value)) {
+                      setAmount(value);
+                    }
+                  }}
+                  className={fieldErrors.amount ? "border-destructive" : ""}
+                  required
+                />
+                {fieldErrors.amount && (
+                  <p className="text-xs text-destructive">
+                    {fieldErrors.amount}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  required
+                  className={fieldErrors.date ? "border-destructive" : ""}
+                />
+                {fieldErrors.date && (
+                  <p className="text-xs text-destructive">{fieldErrors.date}</p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
-              <Input
-                id="date"
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-                required
-                className={fieldErrors.date ? "border-destructive" : ""}
+              <Label htmlFor="description">Description (optional)</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                maxLength={500}
+                rows={2}
               />
-              {fieldErrors.date && (
-                <p className="text-xs text-destructive">{fieldErrors.date}</p>
-              )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              maxLength={500}
-              rows={2}
-            />
-          </div>
+            {error && (
+              <p className="text-sm text-destructive" role="alert">
+                {error}
+              </p>
+            )}
 
-          {error && (
-            <p className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-
-          <DialogFooter>
-            <Button
-              className="h-11 px-4 md:h-10"
-              type="submit"
-              disabled={isSubmitting || !accountId}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving...
-                </>
-              ) : transaction ? (
-                "Save changes"
-              ) : (
-                "Add transaction"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button
+                className="h-11 px-4 md:h-10"
+                type="submit"
+                disabled={isSubmitting || !accountId}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : transaction ? (
+                  "Save changes"
+                ) : (
+                  "Add transaction"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
