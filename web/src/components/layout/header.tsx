@@ -1,4 +1,5 @@
 "use client";
+
 import { useAuth } from "@/providers/auth-provider";
 import {
   DropdownMenu,
@@ -8,9 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, LogOut, Wallet } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  Settings as SettingsIcon,
+  Wallet,
+} from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { usePathname } from "@/i18n/navigation";
+import { usePathname, Link } from "@/i18n/navigation";
 import { navItems } from "./nav-items";
 
 export function Header() {
@@ -49,7 +55,14 @@ export function Header() {
             {user?.email}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logout} className=" cursor-pointer">
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/settings">
+              <SettingsIcon className="size-4" />
+              Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={logout} className="cursor-pointer">
             <LogOut className="size-4" />
             Sign out
           </DropdownMenuItem>
