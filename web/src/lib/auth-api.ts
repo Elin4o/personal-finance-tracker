@@ -34,3 +34,27 @@ export async function getMe(): Promise<MeResponse> {
 export async function logout(): Promise<void> {
   await apiPost<{ success: boolean }>("/auth/logout");
 }
+
+export function forgotPassword(email: string): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/forgot-password", { email });
+}
+
+export function resetPassword(
+  token: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/reset-password", {
+    token,
+    newPassword,
+  });
+}
+
+export function verifyEmail(token: string): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/verify-email", {
+    token,
+  });
+}
+
+export function resendVerification(): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/resend-verification");
+}

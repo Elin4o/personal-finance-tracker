@@ -63,6 +63,14 @@ export class UsersService {
     return { message: 'Password changed successfully' };
   }
 
+  async getAccount(userId: string) {
+    return this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+    });
+  }
+
   async deleteAccount(userId: string, password: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');

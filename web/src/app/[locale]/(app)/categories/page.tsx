@@ -101,7 +101,7 @@ export default function CategoriesPage() {
               />
               <Label
                 htmlFor="show-archived"
-                className="text-sm text-muted-foreground"
+                className="text-sm text-muted-foreground cursor-pointer"
               >
                 Show archived
               </Label>
@@ -140,7 +140,21 @@ export default function CategoriesPage() {
         </div>
       )}
 
-      {!isLoading && !error && categories.length > 0 && (
+      {!isLoading &&
+        !error &&
+        categories.length > 0 &&
+        visibleCategories.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <p className="text-sm font-medium">
+              All your categories are archived
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Turn on &quot;Show archived&quot; above to see them.
+            </p>
+          </div>
+        )}
+
+      {!isLoading && !error && visibleCategories.length > 0 && (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>

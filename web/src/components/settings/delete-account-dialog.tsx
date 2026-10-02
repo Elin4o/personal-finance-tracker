@@ -53,7 +53,7 @@ export default function DeleteAccountDialog() {
 
       <Button
         variant="destructive"
-        className="mt-4 h-11 px-4 md:h-10"
+        className="mt-4 h-11 px-4 md:h-10 cursor-pointer"
         onClick={() => setOpen(true)}
       >
         Delete my account

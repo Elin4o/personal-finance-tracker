@@ -93,7 +93,7 @@ export default function AccountsPage() {
 
   return (
     <div className="space-y-6">
-      {visibleAccounts.length > 0 && (
+      {accounts.length > 0 && (
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-muted-foreground">
             Manage your cash, bank, and card accounts.
@@ -105,16 +105,20 @@ export default function AccountsPage() {
                 id="show-archived"
                 checked={showArchived}
                 onCheckedChange={setShowArchived}
+                className="cursor-pointer"
               />
               <Label
                 htmlFor="show-archived"
-                className="text-sm text-muted-foreground"
+                className="text-sm text-muted-foreground cursor-pointer"
               >
                 Show archived
               </Label>
             </div>
 
-            <Button className="h-11 px-4 md:h-10" onClick={openCreateDialog}>
+            <Button
+              className="h-11 px-4 md:h-10 cursor-pointer"
+              onClick={openCreateDialog}
+            >
               <Plus className="size-4" />
               Add account
             </Button>
@@ -134,18 +138,35 @@ export default function AccountsPage() {
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      {!isLoading && !error && visibleAccounts.length === 0 && (
+      {!isLoading && !error && accounts.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
           <p className="text-sm font-medium">No accounts yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Add your first account to start tracking your money.
           </p>
-          <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
+          <Button
+            className="mt-4 h-11 px-4 md:h-10 cursor-pointer"
+            onClick={openCreateDialog}
+          >
             <Plus className="size-4" />
             Add your first account
           </Button>
         </div>
       )}
+
+      {!isLoading &&
+        !error &&
+        accounts.length > 0 &&
+        visibleAccounts.length === 0 && (
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
+            <p className="text-sm font-medium">
+              All your accounts are archived
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Turn on &quot;Show archived&quot; above to see them.
+            </p>
+          </div>
+        )}
 
       {!isLoading && !error && visibleAccounts.length > 0 && (
         <>
@@ -177,17 +198,23 @@ export default function AccountsPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="size-4" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="cursor-pointer"
+                          >
+                            <MoreVertical className="size-4 cursor-pointer" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => openEditDialog(account)}
+                            className="cursor-pointer"
                           >
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
+                            className="cursor-pointer"
                             onClick={async () => {
                               await updateAccount(account.id, {
                                 isArchived: !account.isArchived,
@@ -201,6 +228,7 @@ export default function AccountsPage() {
                             {account.isArchived ? "Unarchive" : "Archive"}
                           </DropdownMenuItem>
                           <DropdownMenuItem
+                            className="cursor-pointer"
                             variant="destructive"
                             onClick={() => setDeletingAccount(account)}
                           >

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -13,6 +14,9 @@ import { NotificationSettings } from '../database/entities/notification-settings
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { RefreshToken } from '../database/entities/refresh-token.entity';
+import { MailService } from '../mail/mail.service';
+import { VerificationToken } from '../database/entities/verification-token.entity';
+import { VerificationTokenType } from '../database/enums/verification-token-type.enum';
 
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -27,6 +31,11 @@ export class AuthService {
 
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
+
+    @InjectRepository(VerificationToken)
+    private readonly verificationTokenRepository: Repository<VerificationToken>,
+
+    private readonly mailService: MailService,
 
     private readonly dataSource: DataSource,
 
@@ -55,6 +64,27 @@ export class AuthService {
     });
 
     await this.refreshTokenRepository.save(refreshToken);
+
+    return rawToken;
+  }
+
+  private async issueVerificationToken(
+    userId: string,
+    type: VerificationTokenType,
+    ttlMs: number,
+  ): Promise<string> {
+    await this.verificationTokenRepository.delete({ userId, type });
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+
+    const tokenEntity = this.verificationTokenRepository.create({
+      userId,
+      tokenHash: this.hashToken(rawToken),
+      type,
+      expiresAt: new Date(Date.now() + ttlMs),
+    });
+
+    await this.verificationTokenRepository.save(tokenEntity);
 
     return rawToken;
   }
@@ -104,6 +134,13 @@ export class AuthService {
     }
     const accessToken = await this.signAccessToken(user);
     const refreshToken = await this.issueRefreshToken(user, userAgent);
+
+    const verificationToken = await this.issueVerificationToken(
+      user.id,
+      VerificationTokenType.EMAIL_VERIFICATION,
+      24 * 60 * 60 * 1000,
+    );
+    await this.mailService.sendVerificationEmail(user.email, verificationToken);
 
     return {
       accessToken,
@@ -196,6 +233,94 @@ export class AuthService {
       existing.revokedAt = new Date();
       await this.refreshTokenRepository.save(existing);
     }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) return;
+
+    const token = await this.issueVerificationToken(
+      user.id,
+      VerificationTokenType.PASSWORD_RESET,
+      60 * 60 * 1000,
+    );
+    await this.mailService.sendPasswordResetEmail(user.email, token);
+  }
+
+  async resetPassword(
+    rawToken: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const tokenEntity = await this.verificationTokenRepository.findOne({
+      where: {
+        tokenHash: this.hashToken(rawToken),
+        type: VerificationTokenType.PASSWORD_RESET,
+      },
+      relations: { user: true },
+    });
+
+    if (!tokenEntity || tokenEntity.expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('Invalid or expired reset link.');
+    }
+
+    const user = tokenEntity.user;
+    user.passwordHash = await argon2.hash(newPassword);
+    await this.userRepository.save(user);
+
+    await this.verificationTokenRepository.delete({
+      userId: user.id,
+      type: VerificationTokenType.PASSWORD_RESET,
+    });
+
+    await this.refreshTokenRepository
+      .createQueryBuilder()
+      .update(RefreshToken)
+      .set({ revokedAt: new Date() })
+      .where('userId = :userId', { userId: user.id })
+      .andWhere('revokedAt IS NULL')
+      .execute();
+
+    return { message: 'Password reset successfully. Please sign in.' };
+  }
+
+  async verifyEmail(rawToken: string): Promise<{ message: string }> {
+    const tokenEntity = await this.verificationTokenRepository.findOne({
+      where: {
+        tokenHash: this.hashToken(rawToken),
+        type: VerificationTokenType.EMAIL_VERIFICATION,
+      },
+      relations: { user: true },
+    });
+
+    console.log(tokenEntity, tokenEntity?.expiresAt, Date.now());
+
+    if (!tokenEntity || tokenEntity.expiresAt.getTime() < Date.now()) {
+      throw new BadRequestException('Invalid or expired verification link.');
+    }
+
+    tokenEntity.user.emailVerified = true;
+
+    await this.userRepository.save(tokenEntity.user);
+
+    await this.verificationTokenRepository.delete({
+      id: tokenEntity.id,
+    });
+
+    return {
+      message: 'Email verified successfully.',
+    };
+  }
+
+  async resendVerification(userId: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user || user.emailVerified) return;
+
+    const token = await this.issueVerificationToken(
+      user.id,
+      VerificationTokenType.EMAIL_VERIFICATION,
+      24 * 60 * 60 * 1000,
+    );
+    await this.mailService.sendVerificationEmail(user.email, token);
   }
 
   private async revokeAllForUser(userId: string): Promise<void> {

@@ -41,25 +41,28 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
-              {navItems.map(({ href, label, icon: Icon }) => (
-                <SidebarMenuItem key={href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === href}
-                    className={cn(
-                      "h-11 text-base",
-                      "hover:bg-primary/5",
-                      "data-active:bg-primary/10 data-active:text-primary data-active:font-medium",
-                      "group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-3!",
-                    )}
-                  >
-                    <Link href={href}>
-                      <Icon className="size-5" />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map(
+                ({ href, label, icon: Icon, excludeNav }) =>
+                  !excludeNav && (
+                    <SidebarMenuItem key={href}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={pathname === href}
+                        className={cn(
+                          "h-11 text-base",
+                          "hover:bg-primary/5",
+                          "data-active:bg-primary/10 data-active:text-primary data-active:font-medium",
+                          "group-data-[collapsible=icon]:size-11! group-data-[collapsible=icon]:p-3!",
+                        )}
+                      >
+                        <Link href={href}>
+                          <Icon className="size-5" />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ),
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

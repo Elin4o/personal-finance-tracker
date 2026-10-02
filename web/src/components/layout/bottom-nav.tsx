@@ -12,8 +12,12 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t bg-background pb-[env(safe-area-inset-bottom)]">
-      {navItems.map(({ href, label, icon: Icon }) => {
+      {navItems.map(({ href, label, icon: Icon, excludeNav }) => {
         const isActive = pathname === href;
+
+        if (excludeNav) {
+          return;
+        }
 
         return (
           <Link

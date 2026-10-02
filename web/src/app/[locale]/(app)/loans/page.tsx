@@ -147,6 +147,12 @@ export default function LoansPage() {
                         {loan.dueDate &&
                           ` · Due ${new Date(loan.dueDate).toLocaleDateString()}`}
                       </p>
+
+                      {loan.description && (
+                        <p className="mt-2 min-w-0 max-w-full text-sm text-muted-foreground [overflow-wrap:anywhere]">
+                          {loan.description}
+                        </p>
+                      )}
                     </div>
                   </div>
 

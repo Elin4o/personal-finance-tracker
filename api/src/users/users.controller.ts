@@ -23,6 +23,11 @@ const REFRESH_COOKIE_NAME = 'refresh_token';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Get('me/account')
+  getAccountInfo(@CurrentUser() user: AuthenticatedUser) {
+    return this.usersService.getAccount(user.userId);
+  }
+
   @Get('me/notification-settings')
   getNotificationSettings(@CurrentUser() user: AuthenticatedUser) {
     return this.usersService.getNotificationSettings(user.userId);

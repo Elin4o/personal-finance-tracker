@@ -200,7 +200,7 @@ export default function TransactionsPage() {
             </p>
 
             <Button
-              className="h-11 shrink-0 px-4 md:h-10"
+              className="h-11 shrink-0 px-4 md:h-10 cursor-pointer"
               onClick={openCreateDialog}
             >
               <Plus className="size-4" />
@@ -283,7 +283,10 @@ export default function TransactionsPage() {
               </TableHeader>
               <TableBody>
                 {transactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
+                  <TableRow
+                    key={transaction.id}
+                    className={`${transaction.account.isArchived ? "opacity-50" : ""}`}
+                  >
                     <TableCell>
                       <TypeIcon type={transaction.type} />
                     </TableCell>
@@ -355,7 +358,7 @@ export default function TransactionsPage() {
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="w-full min-w-0 rounded-lg border p-4"
+                className={`w-full min-w-0 rounded-lg border p-4 ${transaction.account.isArchived ? "opacity-50" : ""}   `}
               >
                 <div className="flex min-w-0 items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -417,11 +420,9 @@ export default function TransactionsPage() {
                 </div>
 
                 {transaction.description && (
-                  <div className="mt-2 w-full overflow-hidden">
-                    <p className="text-sm text-muted-foreground wrap-break-word">
-                      {transaction.description}
-                    </p>
-                  </div>
+                  <p className="mt-2 min-w-0 max-w-full overflow-hidden text-sm text-muted-foreground wrap-anywhere">
+                    {transaction.description}
+                  </p>
                 )}
 
                 <p

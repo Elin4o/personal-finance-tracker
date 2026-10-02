@@ -9,10 +9,18 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './jwt.strategy';
 import { RefreshToken } from '../database/entities/refresh-token.entity';
 import { RefreshTokenCleanupService } from './refresh-token-cleanup.service';
+import { VerificationToken } from '../database/entities/verification-token.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, NotificationSettings, RefreshToken]),
+    TypeOrmModule.forFeature([
+      User,
+      NotificationSettings,
+      RefreshToken,
+      VerificationToken,
+    ]),
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

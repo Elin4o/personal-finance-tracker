@@ -25,6 +25,9 @@ export class User {
   @Column()
   passwordHash!: string;
 
+  @Column({ default: false })
+  emailVerified!: boolean;
+
   @OneToMany(() => Account, (account) => account.user)
   accounts!: Account[];
 

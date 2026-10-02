@@ -95,9 +95,9 @@ export default function ChangePasswordCard() {
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
-                <EyeOff className="size-5" />
+                <EyeOff className="size-5 cursor-pointer" />
               ) : (
-                <Eye className="size-5" />
+                <Eye className="size-5 cursor-pointer" />
               )}
             </button>
           </div>
@@ -162,7 +162,7 @@ export default function ChangePasswordCard() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-11 px-4 md:h-10"
+          className="h-11 px-4 md:h-10 cursor-pointer"
         >
           {isSubmitting ? (
             <>

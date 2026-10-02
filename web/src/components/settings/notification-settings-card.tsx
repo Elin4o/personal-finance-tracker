@@ -20,21 +20,21 @@ const FIELDS: {
     label: "Email notifications",
     description: "General updates sent to your email.",
   },
-  {
-    key: "pushEnabled",
-    label: "Push notifications",
-    description: "Alerts sent to your device.",
-  },
+  // {
+  //   key: "pushEnabled",
+  //   label: "Push notifications",
+  //   description: "Alerts sent to your device.",
+  // },
   {
     key: "loanRemindersEnabled",
     label: "Loan reminders",
     description: "Reminders about upcoming or overdue loan payments.",
   },
-  {
-    key: "savingsGoalRemindersEnabled",
-    label: "Savings goal reminders",
-    description: "Reminders about your savings goals progress.",
-  },
+  // {
+  //   key: "savingsGoalRemindersEnabled",
+  //   label: "Savings goal reminders",
+  //   description: "Reminders about your savings goals progress.",
+  // },
 ];
 
 export default function NotificationSettingsCard() {
@@ -116,6 +116,7 @@ export default function NotificationSettingsCard() {
                 checked={settings[key]}
                 disabled={savingKey === key}
                 onCheckedChange={(checked) => handleToggle(key, checked)}
+                className="cursor-pointer"
               />
             </div>
           ))}

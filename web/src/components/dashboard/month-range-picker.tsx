@@ -62,7 +62,7 @@ export default function MonthRangePicker({
         value={keyOf(from.year, from.month)}
         onValueChange={handleFromChange}
       >
-        <SelectTrigger className="h-9 w-28">
+        <SelectTrigger className="h-9 w-28 cursor-pointer">
           <SelectValue />
         </SelectTrigger>
         <SelectContent
@@ -77,6 +77,7 @@ export default function MonthRangePicker({
             <SelectItem
               key={keyOf(o.year, o.month)}
               value={keyOf(o.year, o.month)}
+              className="cursor-pointer"
             >
               {o.label}
             </SelectItem>
@@ -87,7 +88,7 @@ export default function MonthRangePicker({
       <span className="text-muted-foreground">to</span>
 
       <Select value={keyOf(to.year, to.month)} onValueChange={handleToChange}>
-        <SelectTrigger className="h-9 w-28">
+        <SelectTrigger className="h-9 w-28 cursor-pointer">
           <SelectValue />
         </SelectTrigger>
         <SelectContent
@@ -102,6 +103,7 @@ export default function MonthRangePicker({
             <SelectItem
               key={keyOf(o.year, o.month)}
               value={keyOf(o.year, o.month)}
+              className="cursor-pointer"
             >
               {o.label}
             </SelectItem>

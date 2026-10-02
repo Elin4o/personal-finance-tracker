@@ -62,14 +62,18 @@ export default function TransactionFiltersBar({
       <div className="flex items-center gap-2 md:hidden">
         <Button
           variant="outline"
-          className="h-11 flex-1"
+          className="h-11 flex-1 cursor-pointer"
           onClick={() => setOpen((value) => !value)}
         >
           <SlidersHorizontal className="size-4" />
           Filters{activeCount > 0 && ` (${activeCount})`}
         </Button>
         {activeCount > 0 && (
-          <Button variant="ghost" className="h-11" onClick={() => onChange({})}>
+          <Button
+            variant="ghost"
+            className="h-11 cursor-pointer"
+            onClick={() => onChange({})}
+          >
             Clear
           </Button>
         )}
@@ -86,7 +90,10 @@ export default function TransactionFiltersBar({
             Type
           </Label>
           <Select value={filters.type ?? ALL} onValueChange={handleTypeChange}>
-            <SelectTrigger id="filter-type" className="h-11 w-full md:h-10">
+            <SelectTrigger
+              id="filter-type"
+              className="w-full data-[size=default]:h-11 md:data-[size=default]:h-10"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper">
@@ -114,7 +121,10 @@ export default function TransactionFiltersBar({
               })
             }
           >
-            <SelectTrigger id="filter-account" className="h-11 w-full md:h-10">
+            <SelectTrigger
+              id="filter-account"
+              className="w-full data-[size=default]:h-11 md:data-[size=default]:h-10"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper">
@@ -146,7 +156,10 @@ export default function TransactionFiltersBar({
               })
             }
           >
-            <SelectTrigger id="filter-category" className="h-11 w-full md:h-10">
+            <SelectTrigger
+              id="filter-category"
+              className="w-full data-[size=default]:h-11 md:data-[size=default]:h-10"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent position="popper">
@@ -171,7 +184,7 @@ export default function TransactionFiltersBar({
           <Input
             id="filter-from"
             type="date"
-            className="h-11 md:h-10"
+            className="h-11 md:h-10 cursor-pointer"
             value={filters.dateFrom ?? ""}
             max={filters.dateTo}
             onChange={(event) =>
@@ -190,7 +203,7 @@ export default function TransactionFiltersBar({
           <Input
             id="filter-to"
             type="date"
-            className="h-11 md:h-10"
+            className="h-11 md:h-10 cursor-pointer"
             value={filters.dateTo ?? ""}
             min={filters.dateFrom}
             onChange={(event) =>
@@ -208,7 +221,10 @@ export default function TransactionFiltersBar({
                 onChange({ ...filters, loanOnly: checked || undefined })
               }
             />
-            <Label htmlFor="filter-loan" className="text-sm font-normal">
+            <Label
+              htmlFor="filter-loan"
+              className="text-sm font-normal cursor-pointer"
+            >
               Payments only
             </Label>
           </div>

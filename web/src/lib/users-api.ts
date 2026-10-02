@@ -7,6 +7,14 @@ export type NotificationSettings = {
   savingsGoalRemindersEnabled: boolean;
 };
 
+export type User = {
+  emailVerified: boolean;
+};
+
+export function getAccount(): Promise<User> {
+  return apiGet<User>("/users/me/account");
+}
+
 export function getNotificationSettings(): Promise<NotificationSettings> {
   return apiGet<NotificationSettings>("/users/me/notification-settings");
 }

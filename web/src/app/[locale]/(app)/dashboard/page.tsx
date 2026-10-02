@@ -60,7 +60,7 @@ function CurrencyRows({
         >
           {value.toFixed(2)}
           <span className="text-base font-normal text-muted-foreground">
-            {curr}
+            {" " + curr}
           </span>
         </p>
       ))}
@@ -326,7 +326,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
-          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 cursor-pointer"
         >
           <p className="text-sm text-muted-foreground">Income this month</p>
           <p className="font-mono text-2xl font-semibold text-success">
@@ -340,7 +340,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
-          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50"
+          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 cursor-pointer"
         >
           <p className="text-sm text-muted-foreground">Expenses this month</p>
           <p className="font-mono text-2xl font-semibold text-destructive">
@@ -430,7 +430,7 @@ export default function DashboardPage() {
               value={categoryMonthKey}
               onValueChange={setCategoryMonthKey}
             >
-              <SelectTrigger className="h-9 w-28">
+              <SelectTrigger className="h-9 w-28 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent position="popper">
@@ -438,6 +438,7 @@ export default function DashboardPage() {
                   <SelectItem
                     key={`${m.year}-${m.month}`}
                     value={`${m.year}-${m.month}`}
+                    className="cursor-pointer"
                   >
                     {m.label} {m.year}
                   </SelectItem>
@@ -449,21 +450,21 @@ export default function DashboardPage() {
             <button
               type="button"
               onClick={() => setBreakdownType("EXPENSE")}
-              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "EXPENSE" ? "bg-destructive/10 text-destructive" : "text-muted-foreground"}`}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "EXPENSE" ? "bg-destructive/10 text-destructive" : "text-muted-foreground"}`}
             >
               Expenses
             </button>
             <button
               type="button"
               onClick={() => setBreakdownType("INCOME")}
-              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "INCOME" ? "bg-success/10 text-success" : "text-muted-foreground"}`}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "INCOME" ? "bg-success/10 text-success" : "text-muted-foreground"}`}
             >
               Income
             </button>
             <button
               type="button"
               onClick={() => setBreakdownType("ALL")}
-              className={`flex-1 rounded px-2.5 py-1 sm:flex-none ${breakdownType === "ALL" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
+              className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "ALL" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
             >
               All
             </button>

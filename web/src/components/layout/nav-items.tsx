@@ -11,6 +11,7 @@ export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+  excludeNav: boolean;
 };
 
 export const navItems = [
@@ -19,4 +20,5 @@ export const navItems = [
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
   { href: "/loans", label: "Loans", icon: HandCoins },
   { href: "/categories", label: "Categories", icon: Tags },
+  { href: "/settings", label: "Settings", icon: Tags, excludeNav: true },
 ];
