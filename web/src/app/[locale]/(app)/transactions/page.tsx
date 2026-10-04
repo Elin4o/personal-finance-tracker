@@ -268,7 +268,7 @@ export default function TransactionsPage() {
 
       {!isLoading && !error && transactions.length > 0 && (
         <>
-          <div className="hidden rounded-lg border md:block">
+          <div className="hidden rounded-lg border bg-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -358,7 +358,7 @@ export default function TransactionsPage() {
             {transactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className={`w-full min-w-0 rounded-lg border p-4 ${transaction.account.isArchived ? "opacity-50" : ""}   `}
+                className={`w-full min-w-0 rounded-lg border bg-card p-4 ${transaction.account.isArchived ? "opacity-50" : ""}   `}
               >
                 <div className="flex min-w-0 items-start justify-between gap-2">
                   <div className="flex min-w-0 flex-1 items-center gap-2">

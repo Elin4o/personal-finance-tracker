@@ -18,6 +18,7 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { usePathname, Link } from "@/i18n/navigation";
 import { navItems } from "./nav-items";
+import { ThemeToggleMenuItem } from "./theme-toggle";
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -61,6 +62,7 @@ export function Header() {
               Settings
             </Link>
           </DropdownMenuItem>
+          <ThemeToggleMenuItem />
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="cursor-pointer">
             <LogOut className="size-4" />

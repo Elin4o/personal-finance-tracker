@@ -68,7 +68,7 @@ export default function ChangePasswordCard() {
   }
 
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-lg border bg-card p-4">
       <h2 className="font-medium">Change password</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         You&apos;ll stay signed in here, but other devices will be signed out.

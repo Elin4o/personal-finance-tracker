@@ -155,7 +155,7 @@ export default function CategoriesPage() {
         )}
 
       {!isLoading && !error && visibleCategories.length > 0 && (
-        <div className="rounded-lg border">
+        <div className="rounded-lg bg-card border">
           <Table>
             <TableHeader>
               <TableRow>

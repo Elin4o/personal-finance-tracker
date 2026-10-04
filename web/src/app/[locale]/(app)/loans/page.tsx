@@ -123,7 +123,7 @@ export default function LoansPage() {
             const isPaidOff = remaining <= 0;
 
             return (
-              <div key={loan.id} className="rounded-lg border p-4">
+              <div key={loan.id} className="rounded-lg border bg-card p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <HandCoins className="mt-0.5 size-5 text-muted-foreground" />
@@ -149,7 +149,7 @@ export default function LoansPage() {
                       </p>
 
                       {loan.description && (
-                        <p className="mt-2 min-w-0 max-w-full text-sm text-muted-foreground [overflow-wrap:anywhere]">
+                        <p className="mt-2 min-w-0 max-w-full text-sm text-muted-foreground wrap-anywhere">
                           {loan.description}
                         </p>
                       )}

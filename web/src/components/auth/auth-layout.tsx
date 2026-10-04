@@ -40,13 +40,14 @@ export function AuthLayout({
       <div
         className="relative flex flex-1 items-center justify-center px-6 py-12"
         style={{
-          backgroundColor: "#f8fafc",
+          backgroundColor: "var(--background)",
           backgroundImage:
-            "repeating-linear-gradient(to bottom, rgba(148, 163, 184, 0.55) 0px, rgba(148, 163, 184, 0.55) 1px, transparent 1px, transparent 40px)",
+            "repeating-linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 35%, transparent) 0px, color-mix(in oklch, var(--foreground) 35%, transparent) 1px, transparent 1px, transparent 40px)",
           backgroundSize: "100% 40px",
         }}
       >
-        <div className="relative z-10 w-full max-w-sm rounded-2xl bg-white/70 px-8 py-10 shadow-sm ring-1 ring-slate-900/5 backdrop-blur-md">
+        <div className="relative z-10 w-full max-w-sm rounded-2xl bg-card/80 px-8 py-10 shadow-sm ring-1 ring-border backdrop-blur-md">
+          {" "}
           {children}
         </div>
       </div>

@@ -44,7 +44,7 @@ export default function DeleteAccountDialog() {
   }
 
   return (
-    <div className="rounded-lg border border-destructive/30 p-4">
+    <div className="rounded-lg border bg-card border-destructive/30 p-4">
       <h2 className="font-medium text-destructive">Delete account</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Permanently delete your account and all your data. This cannot be

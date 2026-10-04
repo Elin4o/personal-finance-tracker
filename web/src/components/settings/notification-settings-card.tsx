@@ -83,7 +83,7 @@ export default function NotificationSettingsCard() {
   }
 
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-lg border bg-card p-4">
       <h2 className="font-medium">Notifications</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Choose what you want to be notified about.

@@ -31,6 +31,7 @@ export default function CategoryBreakdownChart({
               innerRadius={50}
               outerRadius={80}
               paddingAngle={2}
+              stroke="none"
             >
               {data.map((entry) => (
                 <Cell key={entry.name} fill={entry.fill} />

@@ -318,7 +318,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <OnboardingChecklist steps={onboardingSteps} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border p-4">
+        <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Total balance</p>
           <CurrencyRows totals={balanceTotals} activeCurrency={currency} />
         </div>
@@ -326,7 +326,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
-          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 cursor-pointer"
+          className="rounded-lg border p-4 text-left transition-colors bg-card hover:bg-card-hover cursor-pointer"
         >
           <p className="text-sm text-muted-foreground">Income this month</p>
           <p className="font-mono text-2xl font-semibold text-success">
@@ -340,7 +340,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
-          className="rounded-lg border p-4 text-left transition-colors hover:bg-muted/50 cursor-pointer"
+          className="rounded-lg border p-4 text-left transition-colors bg-card hover:bg-card-hover cursor-pointer"
         >
           <p className="text-sm text-muted-foreground">Expenses this month</p>
           <p className="font-mono text-2xl font-semibold text-destructive">
@@ -351,7 +351,7 @@ export default function DashboardPage() {
           </p>
         </button>
 
-        <div className="rounded-lg border p-4">
+        <div className="rounded-lg border bg-card p-4">
           <p className="text-sm text-muted-foreground">Loans</p>
           <div className="space-y-0.5">
             {Object.entries(owedToMe).map(([c, v]) => (
@@ -377,7 +377,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <h2 className="font-medium">Income vs expenses</h2>
           <div className="flex flex-wrap items-center gap-2">
@@ -422,7 +422,7 @@ export default function DashboardPage() {
         </p>
       )}
 
-      <div className="rounded-lg border p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="font-medium">By category</h2>
@@ -473,7 +473,7 @@ export default function DashboardPage() {
         <CategoryBreakdownChart data={categoryData} currency={currency} />
       </div>
 
-      <div className="rounded-lg border p-4">
+      <div className="rounded-lg border bg-card p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-medium">Recent activity</h2>
           <Link
@@ -536,7 +536,7 @@ export default function DashboardPage() {
       </div>
 
       {activeLoans.length > 0 && (
-        <div className="rounded-lg border p-4">
+        <div className="rounded-lg border bg-card p-4">
           <div className="mb-3 flex items-center gap-2">
             <HandCoins className="size-4 text-muted-foreground" />
             <h2 className="font-medium">Open loans</h2>

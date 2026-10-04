@@ -170,7 +170,7 @@ export default function AccountsPage() {
 
       {!isLoading && !error && visibleAccounts.length > 0 && (
         <>
-          <div className="hidden rounded-lg border md:block">
+          <div className="hidden rounded-lg border bg-card md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -246,7 +246,7 @@ export default function AccountsPage() {
             {visibleAccounts.map((account) => (
               <div
                 key={account.id}
-                className={`w-full min-w-0 rounded-lg border p-4 ${
+                className={`w-full min-w-0 rounded-lg bg-card border p-4 ${
                   account.isArchived ? "opacity-50" : ""
                 }`}
               >

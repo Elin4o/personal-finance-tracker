@@ -32,7 +32,7 @@ export default function ActivateAccountCard() {
   }, []);
 
   return (
-    <div className="rounded-lg border p-4">
+    <div className="rounded-lg bg-card border p-4">
       <h2 className="font-medium">Account verification</h2>
       <p className="mt-1 text-sm text-muted-foreground">
         Verify your email address to keep your account secure.
