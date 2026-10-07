@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useTranslations } from "next-intl";
 
 function subscribe() {
   return () => {};
@@ -18,6 +19,7 @@ function getServerSnapshot() {
 }
 
 export function ThemeToggleMenuItem() {
+  const t = useTranslations("themeToggle");
   const { theme, setTheme } = useTheme();
   const mounted = useSyncExternalStore(
     subscribe,
@@ -29,7 +31,7 @@ export function ThemeToggleMenuItem() {
     return (
       <DropdownMenuItem disabled>
         <Sun className="size-4" />
-        Theme
+        {t("theme")}
       </DropdownMenuItem>
     );
   }
@@ -44,7 +46,7 @@ export function ThemeToggleMenuItem() {
       }}
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-      {isDark ? "Light mode" : "Dark mode"}
+      {isDark ? t("lightMode") : t("darkMode")}
     </DropdownMenuItem>
   );
 }

@@ -8,9 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const OPTIONS = getMonthOptions(3);
-const OPTIONS_ASC = [...OPTIONS].reverse();
+import { useTranslations } from "next-intl";
 
 function keyOf(year: number, month: number) {
   return `${year}-${String(month).padStart(2, "0")}`;
@@ -32,6 +30,11 @@ export default function MonthRangePicker({
   earliest,
   onChange,
 }: MonthRangePickerProps) {
+  const tMonths = useTranslations("months");
+  const monthLabels = tMonths.raw("short") as string[];
+  const OPTIONS = getMonthOptions(3, monthLabels);
+  const OPTIONS_ASC = [...OPTIONS].reverse();
+  const t = useTranslations("monthRangePicker");
   const minKey = earliest ? keyOf(earliest.year, earliest.month) : null;
   function parse(value: string): { year: number; month: number } {
     const [year, month] = value.split("-").map(Number);
@@ -85,7 +88,7 @@ export default function MonthRangePicker({
         </SelectContent>
       </Select>
 
-      <span className="text-muted-foreground">to</span>
+      <span className="text-muted-foreground">{t("to")}</span>
 
       <Select value={keyOf(to.year, to.month)} onValueChange={handleToChange}>
         <SelectTrigger className="h-9 w-28 cursor-pointer">

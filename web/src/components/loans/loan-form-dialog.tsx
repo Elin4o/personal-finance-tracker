@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 interface LoanDialogProps {
   open: boolean;
@@ -44,8 +45,9 @@ export default function LoanFormDialog({
   onSuccess,
   loan,
 }: LoanDialogProps) {
+  const t = useTranslations("loanFormDialog");
+  const tCommon = useTranslations("common");
   const [accounts, setAccounts] = useState<Account[]>([]);
-
   const [personName, setPersonName] = useState("");
   const [type, setType] = useState<LoanType>("LENT");
   const [amount, setAmount] = useState("");
@@ -99,21 +101,17 @@ export default function LoanFormDialog({
   function validate(): boolean {
     const errors: Record<string, string> = {};
 
-    const nameError = required(personName, "Enter a name.");
+    const nameError = required(personName, t("enterName"));
     if (nameError) errors.personName = nameError;
 
     const amountError = positiveAmount(amount);
     if (amountError) errors.amount = amountError;
 
     if (!loan) {
-      const currencyError = exactLength(
-        currency,
-        3,
-        "Currency must be 3 letters.",
-      );
+      const currencyError = exactLength(currency, 3, tCommon("shortCurrency"));
       if (currencyError) errors.currency = currencyError;
 
-      if (!accountId) errors.accountId = "Select an account.";
+      if (!accountId) errors.accountId = tCommon("selectAccount");
     }
 
     setFieldErrors(errors);
@@ -154,13 +152,9 @@ export default function LoanFormDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError(err.message || "Invalid loan details.");
+        setError(err.message || t("invalidDetails"));
       } else {
-        setError(
-          loan
-            ? "Failed to update loan. Please try again."
-            : "Failed to create loan. Please try again.",
-        );
+        setError(loan ? t("failedUpdate") : t("failedCreate"));
       }
     } finally {
       setIsSubmitting(false);
@@ -171,27 +165,25 @@ export default function LoanFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{loan ? "Edit loan" : "Add loan"}</DialogTitle>
+          <DialogTitle>{loan ? t("editLoan") : tCommon("addLoan")}</DialogTitle>
           <DialogDescription>
-            {loan
-              ? "Update this loan's details."
-              : "Record money you've lent or borrowed."}
+            {loan ? t("updateLoanDetails") : t("recordMoney")}
           </DialogDescription>
         </DialogHeader>
         {hasNoAccounts ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <Wallet className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
-              Loans need a linked account to track the money in or out.
+              {t("linkedAccount")}
             </p>
             <Button asChild className="h-11 px-4 md:h-10">
-              <Link href="/accounts">Go to Accounts</Link>
+              <Link href="/accounts">{tCommon("goToAccounts")}</Link>
             </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">{tCommon("type")}</Label>
               <Select
                 value={type}
                 onValueChange={(value) => setType(value as LoanType)}
@@ -200,20 +192,20 @@ export default function LoanFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent position="popper">
-                  <SelectItem value="LENT">I lent money</SelectItem>
-                  <SelectItem value="BORROWED">I borrowed money</SelectItem>
+                  <SelectItem value="LENT">{t("iLent")}</SelectItem>
+                  <SelectItem value="BORROWED">{t("iBorrowed")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="personName">Person</Label>
+              <Label htmlFor="personName">{t("person")}</Label>
               <Input
                 id="personName"
                 value={personName}
                 onChange={(event) => setPersonName(event.target.value)}
                 maxLength={200}
-                placeholder="e.g. John Doe"
+                placeholder={t("personPlaceholder")}
                 className={fieldErrors.personName ? "border-destructive" : ""}
               />
               {fieldErrors.personName && (
@@ -225,13 +217,13 @@ export default function LoanFormDialog({
 
             {!loan && (
               <div className="space-y-2">
-                <Label htmlFor="accountId">Account</Label>
+                <Label htmlFor="accountId">{tCommon("account")}</Label>
                 <Select value={accountId} onValueChange={setAccountId}>
                   <SelectTrigger
                     id="accountId"
                     className={`w-full ${fieldErrors.accountId ? "border-destructive" : ""}`}
                   >
-                    <SelectValue placeholder="Select an account" />
+                    <SelectValue placeholder={tCommon("selectAccount")} />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     {accounts.map((account) => (
@@ -251,7 +243,7 @@ export default function LoanFormDialog({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">{tCommon("amount")}</Label>
                 <Input
                   id="amount"
                   inputMode="decimal"
@@ -272,7 +264,7 @@ export default function LoanFormDialog({
 
               {!loan && (
                 <div className="space-y-2">
-                  <Label htmlFor="currency">Currency</Label>
+                  <Label htmlFor="currency">{tCommon("currency")}</Label>
                   <Input
                     id="currency"
                     value={currency}
@@ -280,7 +272,7 @@ export default function LoanFormDialog({
                       setCurrency(event.target.value.toUpperCase())
                     }
                     maxLength={3}
-                    placeholder="EUR"
+                    placeholder={tCommon("currencyPlaceholder")}
                     className={fieldErrors.currency ? "border-destructive" : ""}
                   />
                   {fieldErrors.currency && (
@@ -294,14 +286,13 @@ export default function LoanFormDialog({
 
             {hasPayments && (
               <p className="text-xs text-muted-foreground">
-                Amount and currency can&apos;t be changed after payments have
-                been made.
+                {t("forbiddenChanges")}
               </p>
             )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{tCommon("date")}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -312,7 +303,7 @@ export default function LoanFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">Due date (optional)</Label>
+                <Label htmlFor="dueDate">{t("dueDate")}</Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -323,7 +314,7 @@ export default function LoanFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">{t("description")}</Label>
               <Textarea
                 id="description"
                 value={description}
@@ -348,12 +339,12 @@ export default function LoanFormDialog({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
-                    Saving...
+                    {tCommon("saving")}
                   </>
                 ) : loan ? (
-                  "Save changes"
+                  tCommon("submitSave")
                 ) : (
-                  "Add loan"
+                  tCommon("addLoan")
                 )}
               </Button>
             </DialogFooter>

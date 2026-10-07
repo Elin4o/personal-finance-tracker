@@ -24,8 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Category, getCategories, updateCategory } from "@/lib/categories-api";
+import { useTranslations } from "next-intl";
 
 export default function CategoriesPage() {
+  const t = useTranslations("categories");
+  const tCommon = useTranslations("common");
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,7 +48,7 @@ export default function CategoriesPage() {
       const data = await getCategories();
       setCategories(data);
     } catch {
-      setError("Failed to load categories.");
+      setError(t("failedCategoryLoad"));
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +62,7 @@ export default function CategoriesPage() {
         const data = await getCategories();
         if (!ignore) setCategories(data);
       } catch {
-        if (!ignore) setError("Failed to load categories.");
+        if (!ignore) setError(t("failedCategoryLoad"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -69,7 +73,7 @@ export default function CategoriesPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   const visibleCategories = showArchived
     ? categories
@@ -89,9 +93,7 @@ export default function CategoriesPage() {
     <div className="space-y-6">
       {categories.length > 0 && (
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Organize your transactions into income and expense categories.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("description")}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:justify-end">
             <div className="flex items-center gap-2">
               <Switch
@@ -103,13 +105,13 @@ export default function CategoriesPage() {
                 htmlFor="show-archived"
                 className="text-sm text-muted-foreground cursor-pointer"
               >
-                Show archived
+                {tCommon("showArchived")}
               </Label>
             </div>
 
             <Button className="h-11 px-4 md:h-10" onClick={openCreateDialog}>
               <Plus className="size-4" />
-              Add category
+              {tCommon("addCategory")}
             </Button>
           </div>
         </div>
@@ -129,13 +131,13 @@ export default function CategoriesPage() {
 
       {!isLoading && !error && categories.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm font-medium">No categories yet</p>
+          <p className="text-sm font-medium">{t("noCategory")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add a category to start organizing your transactions.
+            {t("addCategoryForOrganizing")}
           </p>
           <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
             <Plus className="size-4" />
-            Add your first category
+            {t("addFirstCategory")}
           </Button>
         </div>
       )}
@@ -145,11 +147,9 @@ export default function CategoriesPage() {
         categories.length > 0 &&
         visibleCategories.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-            <p className="text-sm font-medium">
-              All your categories are archived
-            </p>
+            <p className="text-sm font-medium">{t("allCategoriesArchived")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Turn on &quot;Show archived&quot; above to see them.
+              {t("turnArchivedOnCategories")}
             </p>
           </div>
         )}
@@ -159,8 +159,8 @@ export default function CategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>{tCommon("name")}</TableHead>
+                <TableHead>{tCommon("type")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
@@ -184,7 +184,9 @@ export default function CategoriesPage() {
                           : "border-destructive/30 text-destructive"
                       }
                     >
-                      {category.type === "INCOME" ? "Income" : "Expense"}
+                      {category.type === "INCOME"
+                        ? tCommon("income")
+                        : tCommon("expense")}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -198,7 +200,7 @@ export default function CategoriesPage() {
                         <DropdownMenuItem
                           onClick={() => openEditDialog(category)}
                         >
-                          Edit
+                          {tCommon("edit")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={async () => {
@@ -208,13 +210,15 @@ export default function CategoriesPage() {
                             loadCategories();
                           }}
                         >
-                          {category.isArchived ? "Unarchive" : "Archive"}
+                          {category.isArchived
+                            ? tCommon("unarchive")
+                            : tCommon("archive")}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           variant="destructive"
                           onClick={() => setDeletingCategory(category)}
                         >
-                          Delete
+                          {tCommon("delete")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

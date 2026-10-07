@@ -9,8 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { useTranslations } from "next-intl";
 
 export default function RegisterPage() {
+  const t = useTranslations("register");
+  const tCommon = useTranslations("common");
+
   const router = useRouter();
   const { register } = useAuth();
 
@@ -26,7 +30,7 @@ export default function RegisterPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(tCommon("passwordMismatch"));
       return;
     }
 
@@ -37,9 +41,9 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("An account with this email already exists.");
+        setError(t("emailTaken"));
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(t("error"));
       }
     } finally {
       setIsSubmitting(false);
@@ -47,23 +51,16 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthLayout
-      headline="Start with a clearer picture of your money."
-      subtext="Set up accounts, categories, and goals in a couple of minutes."
-    >
+    <AuthLayout headline={t("headline")} subtext={t("subtext")}>
       <div className="mb-8">
-        <h2 className="text-3xl font-semibold tracking-tight">
-          Create account
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          It&apos;s free — no card required.
-        </p>
+        <h2 className="text-3xl font-semibold tracking-tight">{t("title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               type="email"
@@ -77,7 +74,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -105,7 +102,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Label htmlFor="confirmPassword">
+              {tCommon("confirmPassword")}
+            </Label>
             <Input
               id="confirmPassword"
               type={showPassword ? "text" : "password"}
@@ -131,20 +130,20 @@ export default function RegisterPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Creating account...
+              {t("submitting")}
             </>
           ) : (
-            "Create account"
+            t("submit")
           )}
         </Button>
 
         <p className="text-sm text-muted-foreground">
-          Already have an account?
+          {t("haveAccount")}{" "}
           <Link
             href="/login"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            {" " + "Sign in"}
+            {t("signIn")}
           </Link>
         </p>
       </form>

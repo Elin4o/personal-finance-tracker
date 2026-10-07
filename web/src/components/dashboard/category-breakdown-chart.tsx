@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 interface CategoryBreakdownChartProps {
@@ -11,10 +12,11 @@ export default function CategoryBreakdownChart({
   data,
   currency,
 }: CategoryBreakdownChartProps) {
+  const t = useTranslations("categoryBreakdownChart");
   if (data.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-        Nothing to show for this month yet.
+        {t("nothingToShow")}
       </div>
     );
   }
@@ -54,7 +56,7 @@ export default function CategoryBreakdownChart({
         </ResponsiveContainer>
       </div>
 
-      <ul className="max-w-[220px] space-y-2 text-sm">
+      <ul className="max-w-55 space-y-2 text-sm">
         {data.map((entry) => (
           <li
             key={entry.name}

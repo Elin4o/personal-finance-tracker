@@ -6,8 +6,10 @@ import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { verifyEmail } from "@/lib/auth-api";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { useTranslations } from "next-intl";
 
 export default function VerifyEmailPage() {
+  const t = useTranslations("verifyEmail");
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -35,10 +37,7 @@ export default function VerifyEmailPage() {
   }, [token]);
 
   return (
-    <AuthLayout
-      headline="Verifying your email."
-      subtext="This will only take a moment."
-    >
+    <AuthLayout headline={t("headline")} subtext={t("subtext")}>
       <div className="flex flex-col items-center gap-4 py-8 text-center">
         {status === "loading" && (
           <Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -47,7 +46,7 @@ export default function VerifyEmailPage() {
           <>
             <CheckCircle2 className="size-8 text-success" />
             <p className="text-sm text-muted-foreground">
-              Your email has been verified.
+              {t("emailVerified")}
             </p>
           </>
         )}
@@ -55,7 +54,7 @@ export default function VerifyEmailPage() {
           <>
             <XCircle className="size-8 text-destructive" />
             <p className="text-sm text-muted-foreground">
-              This link is invalid or has expired.
+              {t("linkInvalidOrExpired")}
             </p>
           </>
         )}
@@ -64,7 +63,7 @@ export default function VerifyEmailPage() {
           href="/login"
           className="text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
-          Go to sign in
+          {t("goToSignIn")}
         </Link>
       </div>
     </AuthLayout>

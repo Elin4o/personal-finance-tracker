@@ -8,8 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
+  const t = useTranslations("forgotPassword");
+  const tCommon = useTranslations("common");
+
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -24,33 +28,32 @@ export default function ForgotPasswordPage() {
       await forgotPassword(email);
       setSubmitted(true);
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(tCommon("genericError"));
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <AuthLayout
-      headline="Forgot your password?"
-      subtext="Enter your email and we'll send you a reset link."
-    >
+    <AuthLayout headline={t("headline")} subtext={t("subtext")}>
       <div className="mb-8">
         <h2 className="text-3xl font-semibold tracking-tight">
-          Reset password
+          {t("resetPassword")}
         </h2>
       </div>
 
       {submitted ? (
         <p className="text-sm text-muted-foreground">
-          If an account exists for <strong>{email}</strong>, a reset link has
-          been sent. Check your inbox.
+          {t.rich("submitted", {
+            email: email,
+            strong: (chunks) => <strong>{chunks}</strong>,
+          })}
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("email")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -78,10 +81,10 @@ export default function ForgotPasswordPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Sending...
+                {t("submitting")}
               </>
             ) : (
-              "Send reset link"
+              t("submit")
             )}
           </Button>
         </form>
@@ -92,7 +95,7 @@ export default function ForgotPasswordPage() {
           href="/login"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          Back to sign in
+          {tCommon("backToSignIn")}
         </Link>
       </p>
     </AuthLayout>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Bar,
   BarChart,
@@ -65,6 +66,7 @@ export default function MonthlyChart({
   onBarClick,
   onMonthClick,
 }: MonthlyChartProps) {
+  const t = useTranslations("monthlyChart");
   return (
     <div className="h-64 w-full pb-3">
       <ResponsiveContainer width="100%" height="100%">
@@ -139,7 +141,7 @@ export default function MonthlyChart({
       </ResponsiveContainer>
       {onMonthClick && (
         <p className="mt-1 text-center text-xs text-balance text-muted-foreground">
-          Tap a bar for a type, or a month for everything.
+          {t("hint")}
         </p>
       )}
     </div>

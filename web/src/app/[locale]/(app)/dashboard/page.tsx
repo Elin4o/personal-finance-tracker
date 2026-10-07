@@ -35,6 +35,7 @@ import {
 import MonthRangePicker from "@/components/dashboard/month-range-picker";
 import { Category, getCategories } from "@/lib/categories-api";
 import OnboardingChecklist from "@/components/dashboard/onboarding-checklist";
+import { useLocale, useTranslations } from "next-intl";
 
 const NOW = new Date();
 
@@ -69,6 +70,12 @@ function CurrencyRows({
 }
 
 export default function DashboardPage() {
+  const t = useTranslations("dashboard");
+  const tCommon = useTranslations("common");
+  const tMonths = useTranslations("months");
+  const monthLabels = tMonths.raw("short") as string[];
+  const locale = useLocale();
+
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -97,7 +104,12 @@ export default function DashboardPage() {
       ? range
       : { from: range.to, to: range.from };
 
-  const MONTHS = getMonthRange(normalizedRange.from, normalizedRange.to);
+  const MONTHS = getMonthRange(
+    normalizedRange.from,
+    normalizedRange.to,
+    monthLabels,
+  );
+
   const [categoryMonthKey, setCategoryMonthKey] = useState(() => {
     const t = monthsAgo(0);
     return `${t.year}-${t.month}`;
@@ -176,7 +188,7 @@ export default function DashboardPage() {
         )[0]?.[0];
         setCurrency((current) => current || bestCurrency || "EUR");
       } catch {
-        if (!ignore) setError("Failed to load dashboard data.");
+        if (!ignore) setError(t("failedDashboard"));
       }
     }
 
@@ -185,7 +197,7 @@ export default function DashboardPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let ignore = false;
@@ -205,7 +217,7 @@ export default function DashboardPage() {
         setTransactions(transactionsData);
         setTruncated(isTruncated);
       } catch {
-        if (!ignore) setError("Failed to load dashboard data.");
+        if (!ignore) setError(t("failedDashboard"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -216,7 +228,7 @@ export default function DashboardPage() {
     return () => {
       ignore = true;
     };
-  }, [range]);
+  }, [range, t]);
   const [prevRange, setPrevRange] = useState(range);
 
   if (range !== prevRange) {
@@ -301,14 +313,14 @@ export default function DashboardPage() {
     .slice(0, 6);
 
   const onboardingSteps = [
-    { label: "Add an account", href: "/accounts", done: accounts.length > 0 },
+    { label: t("addAccount"), href: "/accounts", done: accounts.length > 0 },
     {
-      label: "Add a category",
+      label: t("addCategory"),
       href: "/categories",
       done: categories.length > 0,
     },
     {
-      label: "Record your first transaction",
+      label: t("recordTransaction"),
       href: "/transactions",
       done: transactions.length > 0,
     },
@@ -319,7 +331,7 @@ export default function DashboardPage() {
       <OnboardingChecklist steps={onboardingSteps} />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Total balance</p>
+          <p className="text-sm text-muted-foreground">{t("totalBalance")}</p>
           <CurrencyRows totals={balanceTotals} activeCurrency={currency} />
         </div>
 
@@ -328,7 +340,7 @@ export default function DashboardPage() {
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
           className="rounded-lg border p-4 text-left transition-colors bg-card hover:bg-card-hover cursor-pointer"
         >
-          <p className="text-sm text-muted-foreground">Income this month</p>
+          <p className="text-sm text-muted-foreground">{t("incomeMonth")}</p>
           <p className="font-mono text-2xl font-semibold text-success">
             +{thisMonth.income.toFixed(2)}{" "}
             <span className="text-base font-normal text-muted-foreground">
@@ -342,7 +354,7 @@ export default function DashboardPage() {
           onClick={() => goToMonth(NOW.getFullYear(), NOW.getMonth())}
           className="rounded-lg border p-4 text-left transition-colors bg-card hover:bg-card-hover cursor-pointer"
         >
-          <p className="text-sm text-muted-foreground">Expenses this month</p>
+          <p className="text-sm text-muted-foreground">{t("expensesMonth")}</p>
           <p className="font-mono text-2xl font-semibold text-destructive">
             -{thisMonth.expense.toFixed(2)}{" "}
             <span className="text-base font-normal text-muted-foreground">
@@ -352,14 +364,14 @@ export default function DashboardPage() {
         </button>
 
         <div className="rounded-lg border bg-card p-4">
-          <p className="text-sm text-muted-foreground">Loans</p>
+          <p className="text-sm text-muted-foreground">{t("loans")}</p>
           <div className="space-y-0.5">
             {Object.entries(owedToMe).map(([c, v]) => (
               <p key={`owed-${c}`} className="text-sm">
                 <span className="text-success">
                   +{v.toFixed(2)} {c}
                 </span>{" "}
-                owed to you
+                {t("owedToYou")}
               </p>
             ))}
             {Object.entries(owedByMe).map(([c, v]) => (
@@ -367,11 +379,11 @@ export default function DashboardPage() {
                 <span className="text-destructive">
                   -{v.toFixed(2)} {c}
                 </span>{" "}
-                you owe
+                {t("youOwe")}
               </p>
             ))}
             {activeLoans.length === 0 && (
-              <p className="text-sm text-muted-foreground">No open loans.</p>
+              <p className="text-sm text-muted-foreground">{t("noLoans")}</p>
             )}
           </div>
         </div>
@@ -379,7 +391,7 @@ export default function DashboardPage() {
 
       <div className="rounded-lg border bg-card p-4">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <h2 className="font-medium">Income vs expenses</h2>
+          <h2 className="font-medium">{t("incomeVsExpenses")}</h2>
           <div className="flex flex-wrap items-center gap-2">
             <MonthRangePicker
               from={range.from}
@@ -412,20 +424,18 @@ export default function DashboardPage() {
           />
         ) : (
           <p className="py-12 text-center text-sm text-muted-foreground">
-            Add an account to see this chart.
+            {t("chartAddAccount")}
           </p>
         )}
       </div>
       {truncated && (
-        <p className="text-xs text-muted-foreground">
-          Showing a sample of your transactions for this period.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("showSample")}</p>
       )}
 
       <div className="rounded-lg border bg-card p-4">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-medium">By category</h2>
+            <h2 className="font-medium">{t("byCategory")}</h2>
             <Select
               value={categoryMonthKey}
               onValueChange={setCategoryMonthKey}
@@ -452,21 +462,21 @@ export default function DashboardPage() {
               onClick={() => setBreakdownType("EXPENSE")}
               className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "EXPENSE" ? "bg-destructive/10 text-destructive" : "text-muted-foreground"}`}
             >
-              Expenses
+              {t("expenses")}
             </button>
             <button
               type="button"
               onClick={() => setBreakdownType("INCOME")}
               className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "INCOME" ? "bg-success/10 text-success" : "text-muted-foreground"}`}
             >
-              Income
+              {tCommon("income")}
             </button>
             <button
               type="button"
               onClick={() => setBreakdownType("ALL")}
               className={`flex-1 rounded px-2.5 py-1 sm:flex-none cursor-pointer ${breakdownType === "ALL" ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}
             >
-              All
+              {t("all")}
             </button>
           </div>
         </div>
@@ -475,18 +485,18 @@ export default function DashboardPage() {
 
       <div className="rounded-lg border bg-card p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-medium">Recent activity</h2>
+          <h2 className="font-medium">{t("recentActivity")}</h2>
           <Link
             href="/transactions"
             className="text-sm text-primary hover:underline"
           >
-            View all
+            {t("viewAll")}
           </Link>
         </div>
 
         {recent.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            No transactions yet.
+            {tCommon("noTransactions")}
           </p>
         ) : (
           <ul className="divide-y">
@@ -512,7 +522,7 @@ export default function DashboardPage() {
                         : (t.category?.name ?? t.account.name)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(t.date).toLocaleDateString()}
+                      {new Date(t.date).toLocaleDateString(locale)}
                     </p>
                   </div>
                 </div>
@@ -539,7 +549,7 @@ export default function DashboardPage() {
         <div className="rounded-lg border bg-card p-4">
           <div className="mb-3 flex items-center gap-2">
             <HandCoins className="size-4 text-muted-foreground" />
-            <h2 className="font-medium">Open loans</h2>
+            <h2 className="font-medium">{t("openLoans")}</h2>
           </div>
           <ul className="divide-y">
             {activeLoans.slice(0, 4).map((loan) => (
@@ -561,7 +571,7 @@ export default function DashboardPage() {
             href="/loans"
             className="mt-3 inline-block text-sm text-primary hover:underline"
           >
-            View all loans
+            {t("viewLoans")}
           </Link>
         </div>
       )}

@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { ApiError } from "@/lib/api";
 import { exactLength, required } from "@/lib/validation";
+import { useTranslations } from "next-intl";
 
 interface AccountDialogProps {
   open: boolean;
@@ -50,6 +51,9 @@ export default function AccountFormDialog({
   onSuccess,
   account,
 }: AccountDialogProps) {
+  const t = useTranslations("accountFormDialog");
+  const tCommon = useTranslations("common");
+
   const [name, setName] = useState("");
   const [type, setType] = useState<AccountType>("CASH");
   const [currency, setCurrency] = useState("EUR");
@@ -76,14 +80,10 @@ export default function AccountFormDialog({
   function validate(): boolean {
     const errors: Record<string, string> = {};
 
-    const nameError = required(name, "Enter an account name.");
+    const nameError = required(name, t("emptyName"));
     if (nameError) errors.name = nameError;
 
-    const currencyError = exactLength(
-      currency,
-      3,
-      "Currency must be 3 letters.",
-    );
+    const currencyError = exactLength(currency, 3, tCommon("shortCurrency"));
     if (currencyError) errors.currency = currencyError;
 
     setFieldErrors(errors);
@@ -112,15 +112,9 @@ export default function AccountFormDialog({
       onSuccess();
     } catch (err) {
       if (account && err instanceof ApiError && err.status === 409) {
-        setError(
-          "Currency can't be changed — this account has existing transactions.",
-        );
+        setError(t("currencyWithExistingTransactions"));
       } else {
-        setError(
-          account
-            ? "Failed to update account. Please try again."
-            : "Failed to create account. Please try again.",
-        );
+        setError(account ? t("failedUpdate") : t("failedCreate"));
       }
     } finally {
       setIsSubmitting(false);
@@ -131,24 +125,24 @@ export default function AccountFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{account ? "Edit account" : "Add account"}</DialogTitle>
+          <DialogTitle>
+            {account ? t("editAccount") : tCommon("addAccount")}
+          </DialogTitle>
           <DialogDescription>
-            {account
-              ? "Update your account details."
-              : "Create a new account to track its transactions and balance."}
+            {account ? t("updateDetails") : t("createAccount")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{tCommon("name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
               required
               maxLength={100}
-              placeholder="e.g. Revolut, Cash wallet"
+              placeholder={t("namePlaceholder")}
               className={fieldErrors.name ? "border-destructive" : ""}
             />
             {fieldErrors.name && (
@@ -157,7 +151,7 @@ export default function AccountFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">{tCommon("type")}</Label>
             <Select
               value={type}
               onValueChange={(value) => setType(value as AccountType)}
@@ -168,7 +162,7 @@ export default function AccountFormDialog({
               <SelectContent position="popper">
                 {ACCOUNT_TYPES.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    {option.label}
+                    {tCommon(option.label.toLowerCase())}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -177,7 +171,7 @@ export default function AccountFormDialog({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="currency">Currency</Label>
+              <Label htmlFor="currency">{tCommon("currency")}</Label>
               <Input
                 id="currency"
                 value={currency}
@@ -187,7 +181,7 @@ export default function AccountFormDialog({
                 required
                 maxLength={3}
                 minLength={3}
-                placeholder="EUR"
+                placeholder={tCommon("currencyPlaceholder")}
                 className={fieldErrors.currency ? "border-destructive" : ""}
               />
               {fieldErrors.currency && (
@@ -198,7 +192,7 @@ export default function AccountFormDialog({
             </div>
             {!account && (
               <div className="space-y-2">
-                <Label htmlFor="initialBalance">Initial balance</Label>
+                <Label htmlFor="initialBalance">{t("initialBalance")}</Label>
                 <Input
                   id="initialBalance"
                   type="number"
@@ -226,12 +220,12 @@ export default function AccountFormDialog({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  {account ? "Saving..." : "Creating..."}
+                  {account ? tCommon("saving") : tCommon("creating")}
                 </>
               ) : account ? (
-                "Save changes"
+                tCommon("submitSave")
               ) : (
-                "Create account"
+                t("submitCreate")
               )}
             </Button>
           </DialogFooter>

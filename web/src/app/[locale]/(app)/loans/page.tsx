@@ -16,8 +16,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loan, getLoans } from "@/lib/loans-api";
 import LoanPaymentsDialog from "@/components/loans/loan-payments-dialog";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function LoansPage() {
+  const t = useTranslations("loans");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+
   const [loans, setLoans] = useState<Loan[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -36,7 +41,7 @@ export default function LoansPage() {
       const data = await getLoans();
       setLoans(data);
     } catch {
-      setError("Failed to load loans.");
+      setError(t("failedLoanLoad"));
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +55,7 @@ export default function LoansPage() {
         const data = await getLoans();
         if (!ignore) setLoans(data);
       } catch {
-        if (!ignore) setError("Failed to load loans.");
+        if (!ignore) setError(t("failedLoanLoad"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -61,7 +66,7 @@ export default function LoansPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   function openCreateDialog() {
     setEditingLoan(null);
@@ -77,15 +82,13 @@ export default function LoansPage() {
     <div className="space-y-6">
       {loans.length > 0 && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Money you&apos;ve lent or borrowed.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("description")}</p>
           <Button
             className="h-11 shrink-0 px-4 md:h-10"
             onClick={openCreateDialog}
           >
             <Plus className="size-4" />
-            Add loan
+            {tCommon("addLoan")}
           </Button>
         </div>
       )}
@@ -103,13 +106,13 @@ export default function LoansPage() {
 
       {!isLoading && !error && loans.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm font-medium">No loans yet</p>
+          <p className="text-sm font-medium">{t("noLoans")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Track money you&apos;ve lent to or borrowed from someone.
+            {t("trackMoney")}
           </p>
           <Button className="mt-4 h-11 px-4 md:h-10" onClick={openCreateDialog}>
             <Plus className="size-4" />
-            Add your first loan
+            {t("addFirstLoan")}
           </Button>
         </div>
       )}
@@ -138,14 +141,14 @@ export default function LoansPage() {
                               : "border-destructive/30 text-destructive"
                           }
                         >
-                          {loan.type === "LENT" ? "Lent" : "Borrowed"}
+                          {loan.type === "LENT" ? t("lent") : t("borrowed")}
                         </Badge>
                         {isPaidOff && <Badge variant="outline">Paid off</Badge>}
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        {new Date(loan.date).toLocaleDateString()}
+                        {new Date(loan.date).toLocaleDateString(locale)}
                         {loan.dueDate &&
-                          ` · Due ${new Date(loan.dueDate).toLocaleDateString()}`}
+                          ` · Due ${new Date(loan.dueDate).toLocaleDateString(locale)}`}
                       </p>
 
                       {loan.description && (
@@ -165,17 +168,17 @@ export default function LoansPage() {
                     <DropdownMenuContent align="end">
                       {loan.payments.length > 0 && (
                         <DropdownMenuItem onClick={() => setHistoryLoan(loan)}>
-                          View payments
+                          {t("viewPayments")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => openEditDialog(loan)}>
-                        Edit
+                        {tCommon("edit")}
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => setDeletingLoan(loan)}
                         variant="destructive"
                       >
-                        Delete
+                        {tCommon("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -184,11 +187,11 @@ export default function LoansPage() {
                 <div className="mt-4 space-y-1.5">
                   <div className="flex flex-col-reverse gap-0.5 text-sm sm:flex-row sm:items-center sm:justify-between">
                     <span className="text-muted-foreground">
-                      Paid {(total - remaining).toFixed(2)} of{" "}
+                      {t("paid")} {(total - remaining).toFixed(2)} {t("of")}{" "}
                       {total.toFixed(2)} {loan.currency}
                     </span>
                     <span className="font-mono font-medium">
-                      {remaining.toFixed(2)} {loan.currency} left
+                      {remaining.toFixed(2)} {loan.currency} {t("left")}
                     </span>
                   </div>
                   <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -204,7 +207,7 @@ export default function LoansPage() {
                       className="mt-3 h-11 w-full px-4 sm:h-10 sm:w-auto"
                       onClick={() => setPayingLoan(loan)}
                     >
-                      Record payment
+                      {tCommon("recordPayment")}
                     </Button>
                   )}
                 </div>

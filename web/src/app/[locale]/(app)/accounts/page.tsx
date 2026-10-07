@@ -23,6 +23,7 @@ import {
 import { Account, getAccounts, updateAccount } from "@/lib/accounts-api";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 const ACCOUNT_TYPE_LABELS: Record<Account["type"], string> = {
   CASH: "Cash",
@@ -33,6 +34,8 @@ const ACCOUNT_TYPE_LABELS: Record<Account["type"], string> = {
 };
 
 export default function AccountsPage() {
+  const t = useTranslations("account");
+  const tCommon = useTranslations("common");
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -54,7 +57,7 @@ export default function AccountsPage() {
       const data = await getAccounts();
       setAccounts(data);
     } catch {
-      setError("Failed to load accounts.");
+      setError(t("failedLoad"));
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +71,7 @@ export default function AccountsPage() {
         const data = await getAccounts();
         if (!ignore) setAccounts(data);
       } catch {
-        if (!ignore) setError("Failed to load accounts.");
+        if (!ignore) setError(t("failedLoad"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -79,7 +82,7 @@ export default function AccountsPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   function openCreateDialog() {
     setEditingAccount(null);
@@ -95,9 +98,7 @@ export default function AccountsPage() {
     <div className="space-y-6">
       {accounts.length > 0 && (
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm text-muted-foreground">
-            Manage your cash, bank, and card accounts.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("manageAccounts")}</p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between md:justify-end">
             <div className="flex items-center gap-2">
@@ -111,7 +112,7 @@ export default function AccountsPage() {
                 htmlFor="show-archived"
                 className="text-sm text-muted-foreground cursor-pointer"
               >
-                Show archived
+                {tCommon("showArchived")}
               </Label>
             </div>
 
@@ -120,7 +121,7 @@ export default function AccountsPage() {
               onClick={openCreateDialog}
             >
               <Plus className="size-4" />
-              Add account
+              {tCommon("addAccount")}
             </Button>
           </div>
         </div>
@@ -140,16 +141,16 @@ export default function AccountsPage() {
 
       {!isLoading && !error && accounts.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm font-medium">No accounts yet</p>
+          <p className="text-sm font-medium">{t("noAccounts")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Add your first account to start tracking your money.
+            {t("addFirstAccount")}
           </p>
           <Button
             className="mt-4 h-11 px-4 md:h-10 cursor-pointer"
             onClick={openCreateDialog}
           >
             <Plus className="size-4" />
-            Add your first account
+            {t("buttonAddFirstAccount")}
           </Button>
         </div>
       )}
@@ -159,11 +160,9 @@ export default function AccountsPage() {
         accounts.length > 0 &&
         visibleAccounts.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-            <p className="text-sm font-medium">
-              All your accounts are archived
-            </p>
+            <p className="text-sm font-medium">{t("allArchived")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Turn on &quot;Show archived&quot; above to see them.
+              {t("turnArchivedOn")}
             </p>
           </div>
         )}
@@ -174,10 +173,10 @@ export default function AccountsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Currency</TableHead>
-                  <TableHead className="text-right">Balance</TableHead>
+                  <TableHead>{tCommon("name")}</TableHead>
+                  <TableHead>{tCommon("type")}</TableHead>
+                  <TableHead>{tCommon("currency")}</TableHead>
+                  <TableHead className="text-right">{t("balance")}</TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -190,7 +189,9 @@ export default function AccountsPage() {
                     <TableCell className="font-medium">
                       {account.name}
                     </TableCell>
-                    <TableCell>{ACCOUNT_TYPE_LABELS[account.type]}</TableCell>
+                    <TableCell>
+                      {tCommon(ACCOUNT_TYPE_LABELS[account.type].toLowerCase())}
+                    </TableCell>
                     <TableCell>{account.currency}</TableCell>
                     <TableCell className="text-right font-mono">
                       {parseFloat(account.currentBalance).toFixed(2)}
@@ -211,7 +212,7 @@ export default function AccountsPage() {
                             onClick={() => openEditDialog(account)}
                             className="cursor-pointer"
                           >
-                            Edit
+                            {tCommon("edit")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer"
@@ -225,14 +226,16 @@ export default function AccountsPage() {
                               loadAccounts();
                             }}
                           >
-                            {account.isArchived ? "Unarchive" : "Archive"}
+                            {account.isArchived
+                              ? tCommon("unarchive")
+                              : tCommon("archive")}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="cursor-pointer"
                             variant="destructive"
                             onClick={() => setDeletingAccount(account)}
                           >
-                            Delete
+                            {tCommon("delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

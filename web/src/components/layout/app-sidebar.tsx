@@ -14,8 +14,10 @@ import { Link, usePathname } from "@/i18n/navigation";
 import { navItems } from "./nav-items";
 import { cn } from "@/lib/utils";
 import { Wallet } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export function AppSidebar() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const { toggleSidebar } = useSidebar();
 
@@ -42,7 +44,7 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               {navItems.map(
-                ({ href, label, icon: Icon, excludeNav }) =>
+                ({ href, labelKey, icon: Icon, excludeNav }) =>
                   !excludeNav && (
                     <SidebarMenuItem key={href}>
                       <SidebarMenuButton
@@ -57,7 +59,7 @@ export function AppSidebar() {
                       >
                         <Link href={href}>
                           <Icon className="size-5" />
-                          <span>{label}</span>
+                          <span>{t(labelKey)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

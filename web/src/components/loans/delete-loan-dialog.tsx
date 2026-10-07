@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 interface DeleteLoanDialogProps {
   loan: Loan | null;
@@ -26,6 +27,8 @@ export default function DeleteLoanDialog({
   onOpenChange,
   onSuccess,
 }: DeleteLoanDialogProps) {
+  const t = useTranslations("loanDeleteDialog");
+  const tCommon = useTranslations("common");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [prevLoan, setPrevLoan] = useState(loan);
@@ -47,9 +50,9 @@ export default function DeleteLoanDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError("This loan has payments and can't be deleted.");
+        setError(t("loanCantBeDeleted"));
       } else {
-        setError("Failed to delete loan. Please try again.");
+        setError(t("failedDelete"));
       }
     } finally {
       setIsDeleting(false);
@@ -60,10 +63,11 @@ export default function DeleteLoanDialog({
     <AlertDialog open={!!loan} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete loan</AlertDialogTitle>
+          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the loan with &quot;
-            {loan?.personName}&quot;? This action cannot be undone.
+            {t("description", {
+              personName: loan?.personName ?? "",
+            })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -74,7 +78,9 @@ export default function DeleteLoanDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {tCommon("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(event) => {
               event.preventDefault();
@@ -86,10 +92,10 @@ export default function DeleteLoanDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Deleting...
+                {tCommon("deleting")}
               </>
             ) : (
-              "Delete"
+              tCommon("delete")
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

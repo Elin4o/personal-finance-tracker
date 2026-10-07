@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { required } from "@/lib/validation";
+import { useTranslations } from "next-intl";
 
 interface CategoryDialogProps {
   open: boolean;
@@ -42,6 +43,8 @@ export default function CategoryFormDialog({
   onSuccess,
   category,
 }: CategoryDialogProps) {
+  const t = useTranslations("categoriesFormDialog");
+  const tCommon = useTranslations("common");
   const [name, setName] = useState("");
   const [type, setType] = useState<CategoryType>("EXPENSE");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,7 +66,7 @@ export default function CategoryFormDialog({
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
-    const nameError = required(name, "Enter a category name.");
+    const nameError = required(name, t("emptyName"));
     if (nameError) errors.name = nameError;
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -86,15 +89,9 @@ export default function CategoryFormDialog({
       onSuccess();
     } catch (err) {
       if (category && err instanceof ApiError && err.status === 409) {
-        setError(
-          "Type can't be changed — this category has existing transactions.",
-        );
+        setError(t("existingTransactionTypeError"));
       } else {
-        setError(
-          category
-            ? "Failed to update category. Please try again."
-            : "Failed to create category. Please try again.",
-        );
+        setError(category ? t("failedUpdate") : t("failedCreate"));
       }
     } finally {
       setIsSubmitting(false);
@@ -106,25 +103,23 @@ export default function CategoryFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {category ? "Edit category" : "Add category"}
+            {category ? t("editCategory") : tCommon("addCategory")}
           </DialogTitle>
           <DialogDescription>
-            {category
-              ? "Update your category details."
-              : "Create a category to organize your income and expenses."}
+            {category ? t("updateDetails") : t("createCategory")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">{tCommon("name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
               required
               maxLength={100}
-              placeholder="e.g. Groceries, Salary"
+              placeholder={t("categoryNamePlaceholder")}
               className={fieldErrors.name ? "border-destructive" : ""}
             />
             {fieldErrors.name && (
@@ -133,7 +128,7 @@ export default function CategoryFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">{tCommon("type")}</Label>
             <Select
               value={type}
               onValueChange={(value) => setType(value as CategoryType)}
@@ -142,8 +137,8 @@ export default function CategoryFormDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent position="popper">
-                <SelectItem value="INCOME">Income</SelectItem>
-                <SelectItem value="EXPENSE">Expense</SelectItem>
+                <SelectItem value="INCOME">{tCommon("income")}</SelectItem>
+                <SelectItem value="EXPENSE">{tCommon("expense")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -163,12 +158,12 @@ export default function CategoryFormDialog({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  {category ? "Saving..." : "Creating..."}
+                  {category ? tCommon("saving") : tCommon("creating")}
                 </>
               ) : category ? (
-                "Save changes"
+                tCommon("submitSave")
               ) : (
-                "Create category"
+                t("submitCreateCategory")
               )}
             </Button>
           </DialogFooter>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { deleteAccount } from "@/lib/users-api";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/providers/auth-provider";
@@ -20,6 +21,9 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function DeleteAccountDialog() {
+  const t = useTranslations("deleteAccountDialog");
+  const common = useTranslations("common");
+
   const { logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -35,28 +39,27 @@ export default function DeleteAccountDialog() {
       await logout();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError("Incorrect password.");
+        setError(t("incorrectPassword"));
       } else {
-        setError("Failed to delete account. Please try again.");
+        setError(t("failedDelete"));
       }
+
       setIsDeleting(false);
     }
   }
 
   return (
     <div className="rounded-lg border bg-card border-destructive/30 p-4">
-      <h2 className="font-medium text-destructive">Delete account</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Permanently delete your account and all your data. This cannot be
-        undone.
-      </p>
+      <h2 className="font-medium text-destructive">{t("title")}</h2>
+
+      <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
 
       <Button
         variant="destructive"
         className="mt-4 h-11 px-4 md:h-10 cursor-pointer"
         onClick={() => setOpen(true)}
       >
-        Delete my account
+        {t("deleteButton")}
       </Button>
 
       <AlertDialog
@@ -71,15 +74,16 @@ export default function DeleteAccountDialog() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("confirmTitle")}</AlertDialogTitle>
+
             <AlertDialogDescription>
-              This will permanently delete your account, accounts, transactions,
-              categories, and loans. Enter your password to confirm.
+              {t("confirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
 
           <div className="space-y-2">
-            <Label htmlFor="deletePassword">Password</Label>
+            <Label htmlFor="deletePassword">{t("password")}</Label>
+
             <Input
               id="deletePassword"
               type="password"
@@ -97,7 +101,10 @@ export default function DeleteAccountDialog() {
           )}
 
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>
+              {common("cancel")}
+            </AlertDialogCancel>
+
             <AlertDialogAction
               onClick={(event) => {
                 event.preventDefault();
@@ -109,10 +116,10 @@ export default function DeleteAccountDialog() {
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Deleting...
+                  {common("deleting")}
                 </>
               ) : (
-                "Delete permanently"
+                t("deletePermanently")
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

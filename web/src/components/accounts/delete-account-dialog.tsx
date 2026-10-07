@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 interface DeleteAccountDialogProps {
   account: Account | null;
@@ -26,6 +27,9 @@ export default function DeleteAccountDialog({
   onOpenChange,
   onSuccess,
 }: DeleteAccountDialogProps) {
+  const t = useTranslations("accountDeleteDialog");
+  const tCommon = useTranslations("common");
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [prevAccount, setPrevAccount] = useState(account);
@@ -47,11 +51,9 @@ export default function DeleteAccountDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError(
-          "This account has existing transactions and can't be deleted. Archive it instead.",
-        );
+        setError(t("existingTransactionError"));
       } else {
-        setError("Failed to delete account. Please try again.");
+        setError(t("failedDelete"));
       }
     } finally {
       setIsDeleting(false);
@@ -62,10 +64,11 @@ export default function DeleteAccountDialog({
     <AlertDialog open={!!account} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete account</AlertDialogTitle>
+          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{account?.name}&quot;? This
-            action cannot be undone.
+            {t("description", {
+              name: account?.name ?? "",
+            })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -76,7 +79,9 @@ export default function DeleteAccountDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {tCommon("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(event) => {
               event.preventDefault();
@@ -88,10 +93,10 @@ export default function DeleteAccountDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Deleting...
+                {t("deleting")}
               </>
             ) : (
-              "Delete"
+              tCommon("delete")
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

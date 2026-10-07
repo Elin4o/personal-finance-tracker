@@ -1,6 +1,6 @@
 import type { Transaction, TransactionType } from "./transactions-api";
 
-export function getLastMonths(count: number) {
+export function getLastMonths(count: number, monthLabels: string[]) {
   const months: { year: number; month: number; label: string }[] = [];
   const now = new Date();
 
@@ -9,7 +9,7 @@ export function getLastMonths(count: number) {
     months.push({
       year: d.getFullYear(),
       month: d.getMonth(),
-      label: d.toLocaleDateString(undefined, { month: "short" }),
+      label: monthLabels[d.getMonth()],
     });
   }
 
@@ -19,18 +19,14 @@ export function getLastMonths(count: number) {
 export function getMonthRange(
   from: { year: number; month: number },
   to: { year: number; month: number },
+  monthLabels: string[],
 ) {
   const months: { year: number; month: number; label: string }[] = [];
   let y = from.year;
   let m = from.month;
 
   while (y < to.year || (y === to.year && m <= to.month)) {
-    const d = new Date(y, m, 1);
-    months.push({
-      year: y,
-      month: m,
-      label: d.toLocaleDateString(undefined, { month: "short" }),
-    });
+    months.push({ year: y, month: m, label: monthLabels[m] });
     m++;
     if (m > 11) {
       m = 0;
@@ -41,7 +37,7 @@ export function getMonthRange(
   return months;
 }
 
-export function getMonthOptions(yearsBack = 3) {
+export function getMonthOptions(yearsBack = 3, monthLabels: string[]) {
   const now = new Date();
   const options: { year: number; month: number; label: string }[] = [];
 
@@ -50,10 +46,7 @@ export function getMonthOptions(yearsBack = 3) {
     options.push({
       year: d.getFullYear(),
       month: d.getMonth(),
-      label: d.toLocaleDateString(undefined, {
-        month: "short",
-        year: "numeric",
-      }),
+      label: `${monthLabels[d.getMonth()]} ${d.getFullYear()}`,
     });
   }
 

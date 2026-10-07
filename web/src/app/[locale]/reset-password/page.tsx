@@ -10,8 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { useTranslations } from "next-intl";
 
 export default function ResetPasswordPage() {
+  const t = useTranslations("resetPassword");
+  const tCommon = useTranslations("common");
+  const tAria = useTranslations("common.aria");
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token") ?? "";
@@ -27,15 +32,15 @@ export default function ResetPasswordPage() {
     setError("");
 
     if (!token) {
-      setError("This reset link is invalid or missing a token.");
+      setError(t("invalidToken"));
       return;
     }
     if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      setError(t("passwordTooShort"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+      setError(tCommon("passwordMismatch"));
       return;
     }
 
@@ -46,9 +51,9 @@ export default function ResetPasswordPage() {
       router.push("/login");
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError("This reset link is invalid or has expired.");
+        setError(t("invalidOrExpired"));
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(tCommon("genericError"));
       }
     } finally {
       setIsSubmitting(false);
@@ -56,18 +61,17 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <AuthLayout
-      headline="Set a new password."
-      subtext="Choose a strong password you haven't used before."
-    >
+    <AuthLayout headline={t("headline")} subtext={t("subtext")}>
       <div className="mb-8">
-        <h2 className="text-3xl font-semibold tracking-tight">New password</h2>
+        <h2 className="text-3xl font-semibold tracking-tight">
+          {t("newPassword")}
+        </h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New password</Label>
+            <Label htmlFor="password"> {t("newPassword")}</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -83,7 +87,9 @@ export default function ResetPasswordPage() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword ? tAria("hidePassword") : tAria("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="size-5" />
@@ -95,7 +101,9 @@ export default function ResetPasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm password</Label>
+            <Label htmlFor="confirmPassword">
+              {tCommon("confirmPassword")}
+            </Label>
             <Input
               id="confirmPassword"
               type={showPassword ? "text" : "password"}
@@ -122,10 +130,10 @@ export default function ResetPasswordPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Resetting...
+              {t("resetting")}
             </>
           ) : (
-            "Reset password"
+            t("submit")
           )}
         </Button>
       </form>
@@ -135,7 +143,7 @@ export default function ResetPasswordPage() {
           href="/login"
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          Back to sign in
+          {tCommon("backToSignIn")}
         </Link>
       </p>
     </AuthLayout>

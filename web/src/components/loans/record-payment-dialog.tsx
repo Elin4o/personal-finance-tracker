@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTranslations } from "next-intl";
 
 interface RecordPaymentDialogProps {
   loan: Loan | null;
@@ -36,6 +37,9 @@ export default function RecordPaymentDialog({
   onOpenChange,
   onSuccess,
 }: RecordPaymentDialogProps) {
+  const t = useTranslations("recordPaymentDialog");
+  const tCommon = useTranslations("common");
+
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [accountId, setAccountId] = useState("");
   const [amount, setAmount] = useState("");
@@ -74,7 +78,7 @@ export default function RecordPaymentDialog({
 
   function validate(): boolean {
     const errors: Record<string, string> = {};
-    if (!accountId) errors.accountId = "Select an account.";
+    if (!accountId) errors.accountId = tCommon("selectAccount");
     const amountError = positiveAmount(amount);
     if (amountError) errors.amount = amountError;
     setFieldErrors(errors);
@@ -101,9 +105,9 @@ export default function RecordPaymentDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 400) {
-        setError(err.message || "Payment could not be recorded.");
+        setError(err.message || t("failedRecord"));
       } else {
-        setError("Failed to record payment. Please try again.");
+        setError(t("genericFailedRecord"));
       }
     } finally {
       setIsSubmitting(false);
@@ -114,26 +118,24 @@ export default function RecordPaymentDialog({
     <Dialog open={!!loan} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
+          <DialogTitle>{tCommon("recordPayment")}</DialogTitle>
           <DialogDescription>
             {loan &&
-              `Remaining balance: ${parseFloat(loan.currentLoanBalance).toFixed(2)} ${loan.currency}`}
+              `${t("remainingBalance")} ${parseFloat(loan.currentLoanBalance).toFixed(2)} ${loan.currency}`}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="accountId">
-              {loan?.type === "LENT"
-                ? "Deposit into account"
-                : "Pay from account"}
+              {loan?.type === "LENT" ? t("depositInto") : t("payFrom")}
             </Label>
             <Select value={accountId} onValueChange={setAccountId}>
               <SelectTrigger
                 id="accountId"
                 className={`w-full ${fieldErrors.accountId ? "border-destructive" : ""}`}
               >
-                <SelectValue placeholder="Select an account" />
+                <SelectValue placeholder={tCommon("selectAccount")} />
               </SelectTrigger>
               <SelectContent position="popper">
                 {accounts.map((account) => (
@@ -150,14 +152,16 @@ export default function RecordPaymentDialog({
             )}
             {accounts.length === 0 && (
               <p className="text-xs text-muted-foreground">
-                No accounts in {loan?.currency} available.
+                {t("noAccounts", {
+                  currency: loan?.currency ?? "",
+                })}
               </p>
             )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount</Label>
+              <Label htmlFor="amount">{tCommon("amount")}</Label>
               <Input
                 id="amount"
                 inputMode="decimal"
@@ -174,7 +178,7 @@ export default function RecordPaymentDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{tCommon("date")}</Label>
               <Input
                 id="date"
                 type="date"
@@ -186,7 +190,7 @@ export default function RecordPaymentDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="note">Note (optional)</Label>
+            <Label htmlFor="note">{t("note")}</Label>
             <Input
               id="note"
               value={note}
@@ -210,10 +214,10 @@ export default function RecordPaymentDialog({
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Recording...
+                  {t("recording")}
                 </>
               ) : (
-                "Record payment"
+                tCommon("recordPayment")
               )}
             </Button>
           </DialogFooter>

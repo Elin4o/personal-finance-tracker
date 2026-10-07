@@ -9,8 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/auth-layout";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations("login");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const { login } = useAuth();
 
@@ -31,9 +34,9 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError("Incorrect email or password.");
+        setError(t("error"));
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(tCommon("genericError"));
       }
     } finally {
       setIsSubmitting(false);
@@ -41,21 +44,16 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout
-      headline="See every account, every currency, in one place."
-      subtext="Track spending, loans, and savings goals without the spreadsheet."
-    >
+    <AuthLayout headline={t("headline")} subtext={t("subtext")}>
       <div className="mb-8">
-        <h2 className="text-3xl font-semibold tracking-tight">Sign in</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Welcome back — enter your details below.
-        </p>
+        <h2 className="text-3xl font-semibold tracking-tight">{t("title")}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               type="email"
@@ -100,12 +98,12 @@ export default function LoginPage() {
             )}
           </div>
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <Link
               href="/forgot-password"
               className="text-xs text-primary underline-offset-4 hover:underline"
             >
-              Forgot password?
+              {t("forgotPassword")}
             </Link>
           </div>
         </div>
@@ -118,20 +116,20 @@ export default function LoginPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Signing in...
+              {t("submitting")}
             </>
           ) : (
-            "Sign in"
+            t("submit")
           )}
         </Button>
 
         <p className="text-sm text-muted-foreground">
-          Don&apos;t have an account?
+          {t("noAccount")}{" "}
           <Link
             href="/register"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            {" " + "Create one"}
+            {t("createOne")}
           </Link>
         </p>
       </form>

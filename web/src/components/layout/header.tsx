@@ -19,8 +19,13 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { usePathname, Link } from "@/i18n/navigation";
 import { navItems } from "./nav-items";
 import { ThemeToggleMenuItem } from "./theme-toggle";
+import { useTranslations } from "next-intl";
+import { LocaleSwitcherMenuItem } from "./locale-switcher";
 
 export function Header() {
+  const t = useTranslations("nav");
+  const tSettings = useTranslations("settings");
+
   const { user, logout } = useAuth();
 
   const initial = user?.email.charAt(0).toUpperCase() ?? "?";
@@ -31,13 +36,15 @@ export function Header() {
     <header className="flex items-center justify-between border-b px-6 py-3">
       <div className="flex items-center gap-2">
         <Wallet className="size-5 text-primary md:hidden" />
-        <h1 className="text-lg font-semibold">{currentPage?.label ?? ""}</h1>
+        <h1 className="text-lg font-semibold">
+          {t(currentPage?.labelKey as string) ?? ""}
+        </h1>
       </div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            aria-label="Account menu"
+            aria-label={tSettings("accountMenu")}
             className="ml-auto flex cursor-pointer items-center gap-2 rounded-full py-1 pl-1 pr-2 transition-colors hover:bg-muted md:pr-3"
           >
             <Avatar className="size-8">
@@ -59,14 +66,15 @@ export function Header() {
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link href="/settings">
               <SettingsIcon className="size-4" />
-              Settings
+              {t("settings")}
             </Link>
           </DropdownMenuItem>
           <ThemeToggleMenuItem />
+          <LocaleSwitcherMenuItem />
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={logout} className="cursor-pointer">
             <LogOut className="size-4" />
-            Sign out
+            {t("signOut")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -3,8 +3,10 @@ import { navItems } from "./nav-items";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslations } from "next-intl";
 
 export function BottomNav() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const isMobile = useIsMobile();
 
@@ -12,7 +14,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 flex border-t bg-background pb-[env(safe-area-inset-bottom)]">
-      {navItems.map(({ href, label, icon: Icon, excludeNav }) => {
+      {navItems.map(({ href, labelKey, icon: Icon, excludeNav }) => {
         const isActive = pathname === href;
 
         if (excludeNav) {
@@ -32,7 +34,7 @@ export function BottomNav() {
           >
             <Icon className="size-5 shrink-0" />
 
-            <span className="max-w-full truncate">{label}</span>
+            <span className="max-w-full truncate">{t(labelKey)}</span>
           </Link>
         );
       })}

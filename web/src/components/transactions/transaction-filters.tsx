@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "../ui/switch";
+import { useTranslations } from "next-intl";
 
 const ALL = "all";
 
@@ -37,8 +38,13 @@ export default function TransactionFiltersBar({
 }: TransactionFiltersBarProps) {
   const [open, setOpen] = useState(false);
 
+  const t = useTranslations("transactionFilters");
+  const tCommon = useTranslations("common");
+  const tTransactions = useTranslations("transactions");
+
   const activeCount = Object.values(filters).filter(Boolean).length;
   const categoryDisabled = filters.type === "TRANSFER";
+
   const visibleCategories =
     filters.type && filters.type !== "TRANSFER"
       ? categories.filter((c) => c.type === filters.type)
@@ -46,7 +52,9 @@ export default function TransactionFiltersBar({
 
   function handleTypeChange(value: string) {
     const type = value === ALL ? undefined : (value as TransactionType);
+
     const currentCategory = categories.find((c) => c.id === filters.categoryId);
+
     const keepCategory =
       !type || (type !== "TRANSFER" && currentCategory?.type === type);
 
@@ -66,29 +74,34 @@ export default function TransactionFiltersBar({
           onClick={() => setOpen((value) => !value)}
         >
           <SlidersHorizontal className="size-4" />
-          Filters{activeCount > 0 && ` (${activeCount})`}
+          {t("filters")}
+          {activeCount > 0 && ` (${activeCount})`}
         </Button>
+
         {activeCount > 0 && (
           <Button
             variant="ghost"
             className="h-11 cursor-pointer"
             onClick={() => onChange({})}
           >
-            Clear
+            {t("clear")}
           </Button>
         )}
       </div>
 
       <div
-        className={`${open ? "grid" : "hidden"} grid-cols-1 gap-3 sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid-cols-5`}
+        className={`${
+          open ? "grid" : "hidden"
+        } grid-cols-1 gap-3 sm:grid-cols-2 md:grid md:grid-cols-3 lg:grid-cols-5`}
       >
         <div className="space-y-1.5">
           <Label
             htmlFor="filter-type"
             className="text-xs text-muted-foreground"
           >
-            Type
+            {tCommon("type")}
           </Label>
+
           <Select value={filters.type ?? ALL} onValueChange={handleTypeChange}>
             <SelectTrigger
               id="filter-type"
@@ -96,11 +109,12 @@ export default function TransactionFiltersBar({
             >
               <SelectValue />
             </SelectTrigger>
+
             <SelectContent position="popper">
-              <SelectItem value={ALL}>All types</SelectItem>
-              <SelectItem value="INCOME">Income</SelectItem>
-              <SelectItem value="EXPENSE">Expense</SelectItem>
-              <SelectItem value="TRANSFER">Transfer</SelectItem>
+              <SelectItem value={ALL}>{t("allTypes")}</SelectItem>
+              <SelectItem value="INCOME">{tCommon("income")}</SelectItem>
+              <SelectItem value="EXPENSE">{tCommon("expense")}</SelectItem>
+              <SelectItem value="TRANSFER">{tCommon("transfer")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -110,8 +124,9 @@ export default function TransactionFiltersBar({
             htmlFor="filter-account"
             className="text-xs text-muted-foreground"
           >
-            Account
+            {tCommon("account")}
           </Label>
+
           <Select
             value={filters.accountId ?? ALL}
             onValueChange={(value) =>
@@ -127,12 +142,14 @@ export default function TransactionFiltersBar({
             >
               <SelectValue />
             </SelectTrigger>
+
             <SelectContent position="popper">
-              <SelectItem value={ALL}>All accounts</SelectItem>
+              <SelectItem value={ALL}>{t("allAccounts")}</SelectItem>
+
               {accounts.map((account) => (
                 <SelectItem key={account.id} value={account.id}>
                   {account.name}
-                  {account.isArchived && " (archived)"}
+                  {account.isArchived && t("archived")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -144,8 +161,9 @@ export default function TransactionFiltersBar({
             htmlFor="filter-category"
             className="text-xs text-muted-foreground"
           >
-            Category
+            {tCommon("category")}
           </Label>
+
           <Select
             value={filters.categoryId ?? ALL}
             disabled={categoryDisabled}
@@ -162,12 +180,14 @@ export default function TransactionFiltersBar({
             >
               <SelectValue />
             </SelectTrigger>
+
             <SelectContent position="popper">
-              <SelectItem value={ALL}>All categories</SelectItem>
+              <SelectItem value={ALL}>{t("allCategories")}</SelectItem>
+
               {visibleCategories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
-                  {category.isArchived && " (archived)"}
+                  {category.isArchived && t("archived")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -179,12 +199,13 @@ export default function TransactionFiltersBar({
             htmlFor="filter-from"
             className="text-xs text-muted-foreground"
           >
-            From
+            {t("from")}
           </Label>
+
           <Input
             id="filter-from"
             type="date"
-            className="h-11 md:h-10 cursor-pointer"
+            className="h-11 cursor-pointer md:h-10"
             value={filters.dateFrom ?? ""}
             max={filters.dateTo}
             onChange={(event) =>
@@ -198,34 +219,44 @@ export default function TransactionFiltersBar({
 
         <div className="space-y-1.5">
           <Label htmlFor="filter-to" className="text-xs text-muted-foreground">
-            To
+            {t("to")}
           </Label>
+
           <Input
             id="filter-to"
             type="date"
-            className="h-11 md:h-10 cursor-pointer"
+            className="h-11 cursor-pointer md:h-10"
             value={filters.dateTo ?? ""}
             min={filters.dateFrom}
             onChange={(event) =>
-              onChange({ ...filters, dateTo: event.target.value || undefined })
+              onChange({
+                ...filters,
+                dateTo: event.target.value || undefined,
+              })
             }
           />
         </div>
+
         <div className="space-y-1.5">
-          <Label className="text-xs text-muted-foreground">Loans</Label>
+          <Label className="text-xs text-muted-foreground">{t("loans")}</Label>
+
           <div className="flex h-11 items-center gap-2 md:h-10">
             <Switch
               id="filter-loan"
               checked={filters.loanOnly ?? false}
               onCheckedChange={(checked) =>
-                onChange({ ...filters, loanOnly: checked || undefined })
+                onChange({
+                  ...filters,
+                  loanOnly: checked || undefined,
+                })
               }
             />
+
             <Label
               htmlFor="filter-loan"
-              className="text-sm font-normal cursor-pointer"
+              className="cursor-pointer text-sm font-normal"
             >
-              Payments only
+              {t("paymentsOnly")}
             </Label>
           </div>
         </div>
@@ -239,7 +270,7 @@ export default function TransactionFiltersBar({
           onClick={() => onChange({})}
         >
           <X className="size-4" />
-          Clear filters
+          {tTransactions("clearFilters")}
         </Button>
       )}
     </div>

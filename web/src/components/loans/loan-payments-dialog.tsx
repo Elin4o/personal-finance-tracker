@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLocale, useTranslations } from "next-intl";
 
 interface LoanPaymentsDialogProps {
   loan: Loan | null;
@@ -24,6 +25,9 @@ export default function LoanPaymentsDialog({
   onOpenChange,
   onChanged,
 }: LoanPaymentsDialogProps) {
+  const t = useTranslations("loanPaymentsDialog");
+  const locale = useLocale();
+
   const [payments, setPayments] = useState<LoanPayment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,7 +54,7 @@ export default function LoanPaymentsDialog({
         const data = await getLoanPayments(id);
         if (!ignore) setPayments(data);
       } catch {
-        if (!ignore) setError("Failed to load payments.");
+        if (!ignore) setError(t("failedLoad"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -61,7 +65,7 @@ export default function LoanPaymentsDialog({
     return () => {
       ignore = true;
     };
-  }, [loanId]);
+  }, [loanId, t]);
 
   async function handleCancel(payment: LoanPayment) {
     if (!payment.transaction) return;
@@ -75,7 +79,7 @@ export default function LoanPaymentsDialog({
       setConfirmingId(null);
       onChanged();
     } catch {
-      setError("Failed to cancel payment. Please try again.");
+      setError(t("failedCancel"));
     } finally {
       setCancellingId(null);
     }
@@ -89,7 +93,7 @@ export default function LoanPaymentsDialog({
     <Dialog open={!!loan} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Payments</DialogTitle>
+          <DialogTitle>{t("title")}</DialogTitle>
           <DialogDescription>{loan?.personName}</DialogDescription>
         </DialogHeader>
 
@@ -105,7 +109,7 @@ export default function LoanPaymentsDialog({
 
         {!isLoading && !error && sorted.length === 0 && (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            No payments yet.
+            {t("noPayments")}
           </p>
         )}
 
@@ -118,7 +122,7 @@ export default function LoanPaymentsDialog({
                     {parseFloat(payment.amount).toFixed(2)} {payment.currency}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {new Date(payment.date).toLocaleDateString()}
+                    {new Date(payment.date).toLocaleDateString(locale)}
                     {payment.account && ` · ${payment.account.name}`}
                     {payment.note && ` · ${payment.note}`}
                   </p>
@@ -148,7 +152,7 @@ export default function LoanPaymentsDialog({
                     {cancellingId === payment.id ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
-                      "Cancel payment"
+                      t("cancelPayment")
                     )}
                   </Button>
                   <Button
@@ -156,7 +160,7 @@ export default function LoanPaymentsDialog({
                     className="h-11 flex-1 sm:h-10"
                     onClick={() => setConfirmingId(null)}
                   >
-                    Keep
+                    {t("keep")}
                   </Button>
                 </div>
               )}

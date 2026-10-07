@@ -1,11 +1,15 @@
 "use client";
+
 import { getAccount, User } from "@/lib/users-api";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { resendVerification } from "@/lib/auth-api";
 
 export default function ActivateAccountCard() {
+  const t = useTranslations("accountVerification");
+
   const [account, setAccount] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,11 +20,18 @@ export default function ActivateAccountCard() {
     async function run() {
       try {
         const data = await getAccount();
-        if (!ignore) setAccount(data);
+
+        if (!ignore) {
+          setAccount(data);
+        }
       } catch {
-        if (!ignore) setError("Failed to load account info.");
+        if (!ignore) {
+          setError(t("failedLoad"));
+        }
       } finally {
-        if (!ignore) setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -29,14 +40,13 @@ export default function ActivateAccountCard() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   return (
     <div className="rounded-lg bg-card border p-4">
-      <h2 className="font-medium">Account verification</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Verify your email address to keep your account secure.
-      </p>
+      <h2 className="font-medium">{t("title")}</h2>
+
+      <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
 
       <div className="mt-4">
         {isLoading ? (
@@ -46,21 +56,21 @@ export default function ActivateAccountCard() {
         ) : account?.emailVerified ? (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium">Email verified</p>
-              <p className="text-xs text-muted-foreground">
-                Your account is activated.
-              </p>
+              <p className="text-sm font-medium">{t("emailVerified")}</p>
+
+              <p className="text-xs text-muted-foreground">{t("activated")}</p>
             </div>
 
-            <span className="text-sm text-muted-foreground">Verified</span>
+            <span className="text-sm text-muted-foreground">
+              {t("verified")}
+            </span>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-medium">Email not verified</p>
-              <p className="text-xs text-muted-foreground">
-                Check your inbox for the verification link.
-              </p>
+              <p className="text-sm font-medium">{t("emailNotVerified")}</p>
+
+              <p className="text-xs text-muted-foreground">{t("checkInbox")}</p>
             </div>
 
             <Button
@@ -68,7 +78,7 @@ export default function ActivateAccountCard() {
               size="sm"
               onClick={() => resendVerification()}
             >
-              Resend email
+              {t("resendEmail")}
             </Button>
           </div>
         )}

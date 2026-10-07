@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, type SubmitEvent } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
+import { useTranslations } from "next-intl";
+
 import {
   Transaction,
   createTransaction,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/transactions-api";
 import { getAccounts, type Account } from "@/lib/accounts-api";
 import { getCategories, type Category } from "@/lib/categories-api";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,9 +32,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
 import { positiveAmount, required } from "@/lib/validation";
 import { Link } from "@/i18n/navigation";
-import { Wallet } from "lucide-react";
 
 interface TransactionDialogProps {
   open: boolean;
@@ -50,6 +53,9 @@ export default function TransactionFormDialog({
   onSuccess,
   transaction,
 }: TransactionDialogProps) {
+  const t = useTranslations("transactionFormDialog");
+  const tCommon = useTranslations("common");
+
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -67,7 +73,6 @@ export default function TransactionFormDialog({
   const [error, setError] = useState("");
 
   const [prevOpen, setPrevOpen] = useState(open);
-
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   if (open !== prevOpen) {
@@ -98,17 +103,20 @@ export default function TransactionFormDialog({
         getAccounts(),
         getCategories(),
       ]);
+
       setAccounts(
         accountsData.filter(
-          (a) =>
-            !a.isArchived ||
-            a.id === transaction?.account.id ||
-            a.id === transaction?.transferToAccount?.id,
+          (account) =>
+            !account.isArchived ||
+            account.id === transaction?.account.id ||
+            account.id === transaction?.transferToAccount?.id,
         ),
       );
+
       setCategories(
         categoriesData.filter(
-          (c) => !c.isArchived || c.id === transaction?.category?.id,
+          (category) =>
+            !category.isArchived || category.id === transaction?.category?.id,
         ),
       );
     })();
@@ -117,7 +125,8 @@ export default function TransactionFormDialog({
   function validate(): boolean {
     const errors: Record<string, string> = {};
 
-    const accountError = required(accountId, "Select an account.");
+    const accountError = required(accountId, t("selectAccountError"));
+
     if (accountError) {
       errors.accountId = accountError;
     }
@@ -125,33 +134,29 @@ export default function TransactionFormDialog({
     if (type === "TRANSFER") {
       const transferError = required(
         transferToAccountId,
-        "Select a destination account.",
+        t("selectDestinationError"),
       );
 
       if (transferError) {
         errors.transferToAccountId = transferError;
       } else if (transferToAccountId === accountId) {
-        errors.transferToAccountId =
-          "Transfer destination must be a different account.";
+        errors.transferToAccountId = t("differentAccountError");
       }
     } else {
-      const categoryError = required(categoryId, "Select a category.");
+      const categoryError = required(categoryId, t("selectCategoryError"));
 
       if (categoryError) {
         errors.categoryId = categoryError;
       }
     }
 
-    const amountError = positiveAmount(
-      amount,
-      "Enter an amount greater than 0.",
-    );
+    const amountError = positiveAmount(amount, t("positiveAmountError"));
 
     if (amountError) {
       errors.amount = amountError;
     }
 
-    const dateError = required(date, "Select a date.");
+    const dateError = required(date, t("selectDateError"));
 
     if (dateError) {
       errors.date = dateError;
@@ -163,10 +168,16 @@ export default function TransactionFormDialog({
   }
 
   const hasNoAccounts = open && !transaction && accounts.length === 0;
-  const transferDestinations = accounts.filter((a) => a.id !== accountId);
 
-  const selectedAccount = accounts.find((a) => a.id === accountId);
-  const relevantCategories = categories.filter((c) => c.type === type);
+  const transferDestinations = accounts.filter(
+    (account) => account.id !== accountId,
+  );
+
+  const selectedAccount = accounts.find((account) => account.id === accountId);
+
+  const relevantCategories = categories.filter(
+    (category) => category.type === type,
+  );
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -194,14 +205,11 @@ export default function TransactionFormDialog({
       } else {
         await createTransaction(payload);
       }
+
       onOpenChange(false);
       onSuccess();
     } catch {
-      setError(
-        transaction
-          ? "Failed to update transaction. Please try again."
-          : "Failed to create transaction. Please try again.",
-      );
+      setError(transaction ? t("updateError") : t("createError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -212,29 +220,29 @@ export default function TransactionFormDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {transaction ? "Edit transaction" : "Add transaction"}
+            {transaction ? t("editTitle") : t("addTitle")}
           </DialogTitle>
+
           <DialogDescription>
-            {transaction
-              ? "Update this transaction's details."
-              : "Record a new income, expense, or transfer."}
+            {transaction ? t("editDescription") : t("addDescription")}
           </DialogDescription>
         </DialogHeader>
 
         {hasNoAccounts ? (
           <div className="flex flex-col items-center gap-3 py-6 text-center">
             <Wallet className="size-8 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Add your first account to start recording transactions.
-            </p>
+
+            <p className="text-sm text-muted-foreground">{t("noAccounts")}</p>
+
             <Button asChild className="h-11 px-4 md:h-10">
-              <Link href="/accounts">Go to Accounts</Link>
+              <Link href="/accounts">{t("goToAccounts")}</Link>
             </Button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">{tCommon("type")}</Label>
+
               <Select
                 value={type}
                 onValueChange={(value) => {
@@ -246,18 +254,24 @@ export default function TransactionFormDialog({
                 <SelectTrigger id="type" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
+
                 <SelectContent position="popper">
-                  <SelectItem value="INCOME">Income</SelectItem>
-                  <SelectItem value="EXPENSE">Expense</SelectItem>
-                  <SelectItem value="TRANSFER">Transfer</SelectItem>
+                  <SelectItem value="INCOME">{tCommon("income")}</SelectItem>
+
+                  <SelectItem value="EXPENSE">{tCommon("expense")}</SelectItem>
+
+                  <SelectItem value="TRANSFER">
+                    {tCommon("transfer")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="accountId">
-                {type === "TRANSFER" ? "From account" : "Account"}
+                {type === "TRANSFER" ? t("fromAccount") : tCommon("account")}
               </Label>
+
               <Select value={accountId} onValueChange={setAccountId}>
                 <SelectTrigger
                   id="accountId"
@@ -265,8 +279,9 @@ export default function TransactionFormDialog({
                     fieldErrors.accountId ? "border-destructive" : ""
                   }`}
                 >
-                  <SelectValue placeholder="Select an account" />
+                  <SelectValue placeholder={t("selectAccount")} />
                 </SelectTrigger>
+
                 <SelectContent position="popper">
                   {accounts.map((account) => (
                     <SelectItem key={account.id} value={account.id}>
@@ -275,6 +290,7 @@ export default function TransactionFormDialog({
                   ))}
                 </SelectContent>
               </Select>
+
               {fieldErrors.accountId && (
                 <p className="text-xs text-destructive">
                   {fieldErrors.accountId}
@@ -284,7 +300,8 @@ export default function TransactionFormDialog({
 
             {type === "TRANSFER" ? (
               <div className="space-y-2">
-                <Label htmlFor="transferToAccountId">To account</Label>
+                <Label htmlFor="transferToAccountId">{t("toAccount")}</Label>
+
                 <Select
                   value={transferToAccountId}
                   onValueChange={setTransferToAccountId}
@@ -301,11 +318,12 @@ export default function TransactionFormDialog({
                     <SelectValue
                       placeholder={
                         transferDestinations.length === 0
-                          ? "No other accounts yet"
-                          : "Select destination account"
+                          ? t("noOtherAccounts")
+                          : t("selectDestinationAccount")
                       }
                     />
                   </SelectTrigger>
+
                   <SelectContent position="popper">
                     {transferDestinations.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
@@ -314,14 +332,15 @@ export default function TransactionFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
+
                 {transferDestinations.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    You need a second account to make a transfer —{" "}
+                    {t("secondAccountRequired")}{" "}
                     <Link
                       href="/accounts"
                       className="text-primary hover:underline"
                     >
-                      add one here
+                      {t("addOneHere")}
                     </Link>
                     .
                   </p>
@@ -335,7 +354,8 @@ export default function TransactionFormDialog({
               </div>
             ) : (
               <div className="space-y-2">
-                <Label htmlFor="categoryId">Category</Label>
+                <Label htmlFor="categoryId">{tCommon("category")}</Label>
+
                 <Select
                   value={categoryId}
                   onValueChange={setCategoryId}
@@ -350,11 +370,12 @@ export default function TransactionFormDialog({
                     <SelectValue
                       placeholder={
                         relevantCategories.length === 0
-                          ? "No categories yet"
-                          : "Select a category"
+                          ? t("noCategories")
+                          : t("selectCategory")
                       }
                     />
                   </SelectTrigger>
+
                   <SelectContent position="popper">
                     {relevantCategories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
@@ -363,15 +384,20 @@ export default function TransactionFormDialog({
                     ))}
                   </SelectContent>
                 </Select>
+
                 {relevantCategories.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    You need a {type === "INCOME" ? "income" : "expense"}{" "}
-                    category first —{" "}
+                    {t("categoryRequired", {
+                      type:
+                        type === "INCOME"
+                          ? tCommon("income").toLowerCase()
+                          : tCommon("expense").toLowerCase(),
+                    })}{" "}
                     <Link
                       href="/categories"
                       className="text-primary hover:underline"
                     >
-                      add one here
+                      {t("addOneHere")}
                     </Link>
                     .
                   </p>
@@ -387,13 +413,15 @@ export default function TransactionFormDialog({
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
+                <Label htmlFor="amount">{tCommon("amount")}</Label>
+
                 <Input
                   id="amount"
                   inputMode="decimal"
                   value={amount}
                   onChange={(event) => {
                     const value = event.target.value;
+
                     if (/^\d*\.?\d{0,2}$/.test(value)) {
                       setAmount(value);
                     }
@@ -401,6 +429,7 @@ export default function TransactionFormDialog({
                   className={fieldErrors.amount ? "border-destructive" : ""}
                   required
                 />
+
                 {fieldErrors.amount && (
                   <p className="text-xs text-destructive">
                     {fieldErrors.amount}
@@ -409,7 +438,8 @@ export default function TransactionFormDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date">{tCommon("date")}</Label>
+
                 <Input
                   id="date"
                   type="date"
@@ -418,6 +448,7 @@ export default function TransactionFormDialog({
                   required
                   className={fieldErrors.date ? "border-destructive" : ""}
                 />
+
                 {fieldErrors.date && (
                   <p className="text-xs text-destructive">{fieldErrors.date}</p>
                 )}
@@ -425,7 +456,10 @@ export default function TransactionFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
+              <Label htmlFor="description">
+                {tCommon("description")} ({tCommon("optional")})
+              </Label>
+
               <Textarea
                 id="description"
                 value={description}
@@ -450,12 +484,12 @@ export default function TransactionFormDialog({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 size-4 animate-spin" />
-                    Saving...
+                    {t("saving")}
                   </>
                 ) : transaction ? (
-                  "Save changes"
+                  t("saveChanges")
                 ) : (
-                  "Add transaction"
+                  t("addTransaction")
                 )}
               </Button>
             </DialogFooter>

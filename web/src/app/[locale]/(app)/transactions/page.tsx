@@ -38,6 +38,7 @@ import { Category, getCategories } from "@/lib/categories-api";
 import TransactionFiltersBar from "@/components/transactions/transaction-filters";
 import { useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 
 function formatAmount(transaction: Transaction) {
   const value = parseFloat(transaction.amount).toFixed(2);
@@ -65,6 +66,10 @@ function accountLabel(account: Transaction["account"]) {
 }
 
 export default function TransactionsPage() {
+  const t = useTranslations("transactions");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -137,7 +142,7 @@ export default function TransactionsPage() {
           setError("");
         }
       } catch {
-        if (!ignore) setError("Failed to load transactions.");
+        if (!ignore) setError(t("failedLoad"));
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -148,7 +153,7 @@ export default function TransactionsPage() {
     return () => {
       ignore = true;
     };
-  }, [page, filters]);
+  }, [page, filters, t]);
 
   useEffect(() => {
     let ignore = false;
@@ -189,22 +194,20 @@ export default function TransactionsPage() {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Back to Dashboard
+          {t("backToDashboard")}
         </Link>
       )}
       {(transactions.length > 0 || hasActiveFilters) && (
         <>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-muted-foreground">
-              All your income, expenses, and transfers.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("allInfo")}</p>
 
             <Button
               className="h-11 shrink-0 px-4 md:h-10 cursor-pointer"
               onClick={openCreateDialog}
             >
               <Plus className="size-4" />
-              Add transaction
+              {tCommon("addTransaction")}
             </Button>
           </div>
           <TransactionFiltersBar
@@ -233,16 +236,16 @@ export default function TransactionsPage() {
         transactions.length === 0 &&
         !hasActiveFilters && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-            <p className="text-sm font-medium">No transactions yet</p>
+            <p className="text-sm font-medium">{tCommon("noTransactions")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Add your first transaction to start tracking your spending.
+              {t("descriptionAddFirst")}
             </p>
             <Button
               className="mt-4 h-11 px-4 md:h-10"
               onClick={openCreateDialog}
             >
               <Plus className="size-4" />
-              Add your first transaction
+              {t("addFirstTransaction")}
             </Button>
           </div>
         )}
@@ -252,16 +255,16 @@ export default function TransactionsPage() {
         transactions.length === 0 &&
         hasActiveFilters && (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
-            <p className="text-sm font-medium">No matching transactions</p>
+            <p className="text-sm font-medium">{t("noMatch")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Try changing or clearing your filters.
+              {t("tryChanges")}
             </p>
             <Button
               variant="outline"
               className="mt-4 h-11 px-4 md:h-10"
               onClick={() => handleFiltersChange({})}
             >
-              Clear filters
+              {t("clearFilters")}
             </Button>
           </div>
         )}
@@ -273,11 +276,13 @@ export default function TransactionsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-10" />
-                  <TableHead>Date</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
+                  <TableHead>{tCommon("date")}</TableHead>
+                  <TableHead>{tCommon("account")}</TableHead>
+                  <TableHead>{tCommon("category")}</TableHead>
+                  <TableHead>{tCommon("description")}</TableHead>
+                  <TableHead className="text-right">
+                    {tCommon("amount")}
+                  </TableHead>
                   <TableHead className="w-10" />
                 </TableRow>
               </TableHeader>
@@ -291,7 +296,7 @@ export default function TransactionsPage() {
                       <TypeIcon type={transaction.type} />
                     </TableCell>
                     <TableCell>
-                      {new Date(transaction.date).toLocaleDateString()}
+                      {new Date(transaction.date).toLocaleDateString(locale)}
                     </TableCell>
                     <TableCell>
                       {transaction.type === "TRANSFER"
@@ -300,7 +305,7 @@ export default function TransactionsPage() {
                     </TableCell>
                     <TableCell>
                       {transaction.loan ? (
-                        <Badge variant="outline">Loan</Badge>
+                        <Badge variant="outline">{t("loan")}</Badge>
                       ) : transaction.category ? (
                         <Badge
                           variant="outline"
@@ -317,7 +322,9 @@ export default function TransactionsPage() {
                       )}
                     </TableCell>
                     <TableCell className="max-w-48 truncate text-muted-foreground">
-                      {transaction.description ?? "—"}
+                      {transaction.description
+                        ?.replace("Loan created", t("loanCreated"))
+                        .replace("Loan payment", t("loanPayment")) ?? "—"}
                     </TableCell>
                     <TableCell
                       className={`text-right font-mono ${amountColor(transaction.type)}`}
@@ -336,14 +343,14 @@ export default function TransactionsPage() {
                             <DropdownMenuItem
                               onClick={() => openEditDialog(transaction)}
                             >
-                              Edit
+                              {tCommon("edit")}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem
                             onClick={() => setDeletingTransaction(transaction)}
                             variant="destructive"
                           >
-                            Delete
+                            {tCommon("delete")}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -376,7 +383,7 @@ export default function TransactionsPage() {
                       </p>
 
                       <p className="truncate text-xs text-muted-foreground">
-                        {new Date(transaction.date).toLocaleDateString()}
+                        {new Date(transaction.date).toLocaleDateString(locale)}
                         {transaction.loan ? (
                           " · Loan"
                         ) : transaction.category ? (
@@ -406,14 +413,14 @@ export default function TransactionsPage() {
                         <DropdownMenuItem
                           onClick={() => openEditDialog(transaction)}
                         >
-                          Edit
+                          {tCommon("edit")}
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => setDeletingTransaction(transaction)}
                       >
-                        Delete
+                        {tCommon("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -444,7 +451,7 @@ export default function TransactionsPage() {
                 disabled={page <= 1}
                 onClick={() => setPage((p) => p - 1)}
               >
-                Previous
+                {t("previous")}
               </Button>
               <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages}
@@ -455,7 +462,7 @@ export default function TransactionsPage() {
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                {t("next")}
               </Button>
             </div>
           )}

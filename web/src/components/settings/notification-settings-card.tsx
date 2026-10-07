@@ -6,38 +6,41 @@ import {
   updateNotificationSettings,
   type NotificationSettings,
 } from "@/lib/users-api";
+import { useTranslations } from "next-intl";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const FIELDS: {
   key: keyof NotificationSettings;
-  label: string;
-  description: string;
+  labelKey: "emailNotifications" | "loanReminders";
+  descriptionKey: "emailNotificationsDescription" | "loanRemindersDescription";
 }[] = [
   {
     key: "emailEnabled",
-    label: "Email notifications",
-    description: "General updates sent to your email.",
+    labelKey: "emailNotifications",
+    descriptionKey: "emailNotificationsDescription",
   },
   // {
   //   key: "pushEnabled",
-  //   label: "Push notifications",
-  //   description: "Alerts sent to your device.",
+  //   labelKey: "pushNotifications",
+  //   descriptionKey: "pushNotificationsDescription",
   // },
   {
     key: "loanRemindersEnabled",
-    label: "Loan reminders",
-    description: "Reminders about upcoming or overdue loan payments.",
+    labelKey: "loanReminders",
+    descriptionKey: "loanRemindersDescription",
   },
   // {
   //   key: "savingsGoalRemindersEnabled",
-  //   label: "Savings goal reminders",
-  //   description: "Reminders about your savings goals progress.",
+  //   labelKey: "savingsGoalReminders",
+  //   descriptionKey: "savingsGoalRemindersDescription",
   // },
 ];
 
 export default function NotificationSettingsCard() {
+  const t = useTranslations("notificationSettings");
+
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -49,11 +52,18 @@ export default function NotificationSettingsCard() {
     async function run() {
       try {
         const data = await getNotificationSettings();
-        if (!ignore) setSettings(data);
+
+        if (!ignore) {
+          setSettings(data);
+        }
       } catch {
-        if (!ignore) setError("Failed to load notification settings.");
+        if (!ignore) {
+          setError(t("failedLoad"));
+        }
       } finally {
-        if (!ignore) setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -62,13 +72,18 @@ export default function NotificationSettingsCard() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [t]);
 
   async function handleToggle(key: keyof NotificationSettings, value: boolean) {
     if (!settings) return;
 
     const previous = settings;
-    setSettings({ ...settings, [key]: value });
+
+    setSettings({
+      ...settings,
+      [key]: value,
+    });
+
     setSavingKey(key);
     setError("");
 
@@ -76,7 +91,7 @@ export default function NotificationSettingsCard() {
       await updateNotificationSettings({ [key]: value });
     } catch {
       setSettings(previous);
-      setError("Failed to save. Please try again.");
+      setError(t("failedSave"));
     } finally {
       setSavingKey(null);
     }
@@ -84,10 +99,9 @@ export default function NotificationSettingsCard() {
 
   return (
     <div className="rounded-lg border bg-card p-4">
-      <h2 className="font-medium">Notifications</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Choose what you want to be notified about.
-      </p>
+      <h2 className="font-medium">{t("title")}</h2>
+
+      <p className="mt-1 text-sm text-muted-foreground">{t("description")}</p>
 
       <div className="mt-4 space-y-4">
         {isLoading && (
@@ -103,14 +117,18 @@ export default function NotificationSettingsCard() {
 
         {!isLoading &&
           settings &&
-          FIELDS.map(({ key, label, description }) => (
+          FIELDS.map(({ key, labelKey, descriptionKey }) => (
             <div key={key} className="flex items-center justify-between gap-4">
               <div>
                 <Label htmlFor={key} className="text-sm font-normal">
-                  {label}
+                  {t(labelKey)}
                 </Label>
-                <p className="text-xs text-muted-foreground">{description}</p>
+
+                <p className="text-xs text-muted-foreground">
+                  {t(descriptionKey)}
+                </p>
               </div>
+
               <Switch
                 id={key}
                 checked={settings[key]}

@@ -1,5 +1,405 @@
 {
   "common": {
-    "appName": "Personal Finance Tracker"
+    "genericError": "Something went wrong. Please try again.",
+    "backToSignIn": "Back to sign in",
+    "passwordMismatch": "Passwords do not match.",
+    "confirmPassword": "Confirm password",
+    "showArchived": "Show archived",
+    "name": "Name",
+    "type": "Type",
+    "currency": "Currency",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "addAccount": "Add account",
+    "cancel": "Cancel",
+    "income": "Income",
+    "expense": "Expense",
+    "addCategory": "Add category",
+    "saving": "Saving...",
+    "creating": "Creating...",
+    "submitSave": "Save changes",
+    "addLoan": "Add loan",
+    "shortCurrency": "Currency must be 3 letters.",
+    "goToAccount": "Go to Accounts",
+    "currencyPlaceholder": "EUR",
+    "selectAccount": "Select an account.",
+    "recordPayment": " Record payment",
+    "amount": "Amount",
+    "date": "Date",
+    "addTransaction": "Add transaction",
+    "noTransactions": "No transactions yet.",
+    "account": "Account",
+    "transfer": "Transfer",
+    "category": "Category",
+    "description": "Description",
+    "optional": "Optional",
+    "cash": "Cash",
+    "bank": "Bank",
+    "card": "Card",
+    "savings": "Savings",
+    "other": "Other",
+    "aria": {
+      "hidePassword": "Hide password",
+      "showPassword": "Show password",
+      "toggleSidebar": "Toggle Sidebar"
+    }
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "transactions": "Transactions",
+    "loans": "Loans",
+    "categories": "Categories",
+    "settings": "Settings",
+    "signOut": "Sign out"
+  },
+  "settings": {
+    "accountMenu": "Account menu",
+    "description": "Manage your account preferences and security."
+  },
+  "login": {
+    "headline": "See every account, every currency, in one place.",
+    "subtext": "Track spending, loans, and savings goals without the spreadsheet.",
+    "title": "Sign in",
+    "subtitle": "Welcome back — enter your details below.",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "submit": "Sign in",
+    "submitting": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "createOne": "Create one",
+    "error": "Invalid email or password."
+  },
+  "register": {
+    "headline": "Start with a clearer picture of your money.",
+    "subtext": "Set up accounts, categories, and goals in a couple of minutes.",
+    "title": "Create account",
+    "subtitle": "It's free — no card required.",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Create account",
+    "submitting": "Creating account...",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "error": "Unable to create account.",
+    "emailTaken": "An account with this email already exists."
+  },
+  "forgotPassword": {
+    "headline": "Forgot your password?",
+    "subtext": "Enter your email and we'll send you a reset link.",
+    "resetPassword": "Reset password",
+    "submitted": "If an account exists for <strong>{email}</strong>, a reset link has been sent. Check your inbox.",
+    "email": "Email",
+    "submitting": "Sending...",
+    "submit": "Send reset link"
+  },
+  "resetPassword": {
+    "headline": "Set a new password.",
+    "subtext": "Choose a strong password you haven't used before.",
+    "newPassword": "New password",
+    "invalidToken": "This reset link is invalid or missing a token.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "invalidOrExpired": "This reset link is invalid or has expired.",
+    "resetting": "Resetting...",
+    "submit": "Reset password"
+  },
+  "verifyEmail": {
+    "headline": "Verifying your email.",
+    "subtext": "This will only take a moment.",
+    "emailVerified": "Your email has been verified.",
+    "linkInvalidOrExpired": "This link is invalid or has expired.",
+    "goToSignIn": "Go to sign in"
+  },
+  "themeToggle": {
+    "theme": "Theme",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
+  },
+  "dashboard": {
+    "addAccount": "Add an account",
+    "addCategory": "Add a category",
+    "recordTransaction": "Record your first transaction",
+    "totalBalance": "Total balance",
+    "incomeMonth": "Income this month",
+    "expensesMonth": "Expenses this month",
+    "loans": "Loans",
+    "owedToYou": "owed to you",
+    "youOwe": "you owe",
+    "noLoans": "No open loans.",
+    "incomeVsExpenses": "Income vs expenses",
+    "chartAddAccount": "Add an account to see this chart.",
+    "showSample": "Showing a sample of your transactions for this period.",
+    "byCategory": "By category",
+    "expenses": "Expenses",
+    "all": "All",
+    "recentActivity": "Recent activity",
+    "viewAll": "View all",
+    "openLoans": "Open loans",
+    "viewLoans": "View all loans",
+    "failedDashboard": "Failed to load dashboard data."
+  },
+  "categoryBreakdownChart": {
+    "nothingToShow": "Nothing to show for this month yet."
+  },
+  "monthRangePicker": {
+    "to": "to"
+  },
+  "account": {
+    "failedLoad": "Failed to load accounts.",
+    "manageAccounts": "Manage your cash, bank, and card accounts.",
+    "noAccount": "No accounts yet",
+    "addFirstAccount": " Add your first account to start tracking your money.",
+    "buttonAddFirstAccount": "Add your first account",
+    "allArchived": "All your accounts are archived",
+    "turnArchivedOn": "Turn on 'Show archived' above to see them.",
+    "balance": "Balance"
+  },
+  "accountFormDialog": {
+    "emptyName": "Enter an account name.",
+    "currencyWithExistingTransactions": "Currency can't be changed — this account has existing transactions.",
+    "failedUpdate": "Failed to update account. Please try again.",
+    "failedCreate": "Failed to create account. Please try again.",
+    "editAccount": "Edit account",
+    "updateDetails": "Update your account details.",
+    "createAccount": "Create a new account to track its transactions and balance.",
+    "namePlaceholder": "e.g. Revolut, Cash wallet",
+
+    "initialBalance": "Initial balance",
+    "submitCreate": "Create account"
+  },
+  "accountDeleteDialog": {
+    "existingTransactionError": "This account has existing transactions and can't be deleted. Archive it instead.",
+    "failedDelete": "Failed to delete account. Please try again.",
+    "title": "Delete account",
+    "description": " Are you sure you want to delete ''{name}'' ? This action cannot be undone."
+  },
+  "categories": {
+    "failedCategoryLoad": "Failed to load categories",
+    "description": "Organize your transactions into income and expense categories.",
+    "noCategory": "No categories yet",
+    "addCategoryForOrganizing": "Add a category to start organizing your transactions.",
+    "addFirstCategory": "Add your first category",
+    "allCategoriesArchived": "All your categories are archived",
+    "turnArchivedOnCategories": "Turn on 'Show archived' above to see them."
+  },
+  "categoriesFormDialog": {
+    "emptyName": "Enter a category name.",
+    "existingTransactionTypeError": "Type can't be changed — this category has existing transactions.",
+    "failedUpdate": "Failed to update category. Please try again.",
+    "failedCreate": "Failed to create category. Please try again.",
+    "editCategory": "Edit category",
+    "updateDetails": "Update your category details.",
+    "createCategory": "Create a category to organize your income and expenses.",
+    "categoryNamePlaceholder": "e.g. Groceries, Salary",
+    "submitCreateCategory": "Create cagory"
+  },
+  "categoriesDeleteDialog": {
+    "existingTransactionError": "This category has existing transactions and can't be deleted. Archive it instead.",
+    "failedDelete": "Failed to delete category. Please try again.",
+    "title": "Delete category",
+    "description": "Are you sure you want to delete ''{name}'' ? This action cannot be undone."
+  },
+  "loans": {
+    "failedLoanLoad": "Failed to load loans",
+    "description": "Money you've lent or borrowed",
+    "noLoans": "No loans yet",
+    "trackMoney": "Track money you've lent to or borrowed from someone.",
+    "addFirstCategory": "Add your first category",
+    "allCategoriesArchived": "All your categories are archived",
+    "turnArchivedOnCategories": "Turn on 'Show archived' above to see them.",
+    "addFirstLoan": "Add your first loan",
+    "lent": "Lent",
+    "borrowed": "Borrowed",
+    "viewPayments": "View payments",
+    "paid": "Paid",
+    "of": "of",
+    "left": "left"
+  },
+  "loanFormDialog": {
+    "enterName": "Enter a name.",
+    "invalidDetails": "Invalid loan details.",
+    "failedUpdate": "Failed to update loan. Please try again.",
+    "failedCreate": "Failed to create loan. Please try again.",
+    "editLoan": "Edit loan",
+    "updateLoanDetails": "Update this loan's details.",
+    "recordMoney": "Record money you've lent or borrowed.",
+    "linkedAccount": "Loans need a linked account to track the money in or out.",
+    "iLent": "I lent money",
+    "iBorrowed": "I borrowed money",
+    "person": "Person",
+    "personPlaceholder": "e.g. John Doe",
+
+    "forbiddenChanges": "Amount and currency can't be changed after payments have been made",
+    "dueDate": "Due date (optional)",
+    "description": "Description (optional)"
+  },
+  "loanDeleteDialog": {
+    "loanCantBeDeleted": "This loan has payments and can't be deleted.",
+    "failedDelete": "Failed to delete loan. Please try again.",
+    "title": "Delete loan",
+    "description": "Are you sure you want to delete the loan with ''{personName}'' ? This action cannot be undone."
+  },
+  "loanPaymentsDialog": {
+    "failedLoad": "Failed to load payments.",
+    "failedCancel": "Failed to cancel payment. Please try again.",
+    "title": "Payments",
+    "noPayments": "No payments yet.",
+    "cancelPayment": "Cancel payment",
+    "keep": "Keep"
+  },
+  "recordPaymentDialog": {
+    "failedRecord": "Payment could not be recorded.",
+    "genericFailedRecord": "Failed to record payment. Please try again.",
+    "remainingBalance": "Remaining balance:",
+    "depositInto": "Deposit into account",
+    "payFrom": "Pay from account",
+    "noAccounts": "No accounts in {currency} available.",
+    "note": "Note (optional)",
+    "recording": "Recording..."
+  },
+  "transactions": {
+    "failedLoad": "Failed to load transactions.",
+    "backToDashboard": "Back to Dashboard",
+    "allInfo": "All your income, expenses, and transfers.",
+    "descriptionAddFirst": "Add your first transaction to start tracking your spending.",
+    "addFirstTransaction": " Add your first transaction",
+    "noMatch": "No matching transactions",
+    "tryChanges": "Try changing or clearing your filters.",
+    "clearFilters": "Clear filters",
+    "loan": "Loan",
+    "previous": "Previous",
+    "next": "Next",
+    "loanCreated": "Loan created",
+    "loanPayment": "Loan payment"
+  },
+  "transactionFilters": {
+    "filters": "Filters",
+    "clear": "Clear",
+    "allTypes": "All types",
+    "allAccounts": "All accounts",
+    "archived": " (archived)",
+    "allCategories": "All categories",
+    "from": "From",
+    "to": "To",
+    "loans": "Loans",
+    "paymentsOnly": "Payments only"
+  },
+  "transactionFormDialog": {
+    "editTitle": "Edit transaction",
+    "addTitle": "Add transaction",
+    "editDescription": "Update this transaction''s details.",
+    "addDescription": "Record a new income, expense, or transfer.",
+
+    "noAccounts": "Add your first account to start recording transactions.",
+    "goToAccounts": "Go to Accounts",
+
+    "fromAccount": "From account",
+    "toAccount": "To account",
+    "selectAccount": "Select an account",
+
+    "noOtherAccounts": "No other accounts yet",
+    "selectDestinationAccount": "Select destination account",
+    "secondAccountRequired": "You need a second account to make a transfer —",
+    "addOneHere": "add one here",
+
+    "noCategories": "No categories yet",
+    "selectCategory": "Select a category",
+    "categoryRequired": "You need a {type} category first —",
+
+    "descriptionOptional": "Description (optional)",
+
+    "saving": "Saving...",
+    "saveChanges": "Save changes",
+    "addTransaction": "Add transaction",
+
+    "selectAccountError": "Select an account.",
+    "selectDestinationError": "Select a destination account.",
+    "differentAccountError": "Transfer destination must be a different account.",
+    "selectCategoryError": "Select a category.",
+    "positiveAmountError": "Enter an amount greater than 0.",
+    "selectDateError": "Select a date.",
+
+    "updateError": "Failed to update transaction. Please try again.",
+    "createError": "Failed to create transaction. Please try again."
+  },
+  "transactionDeleteDialog": {
+    "title": "Delete transaction",
+    "descriptionLoan": "This transaction belongs to the loan with {personName}. If it's a payment, the loan's remaining balance is restored. If it's the loan's starting transaction, the loan is deleted too.",
+    "descriptionDefault": "This will reverse its effect on the account balance. This action cannot be undone.",
+    "loanHasPayments": "This loan has payments. Cancel its payments first.",
+    "failedDelete": "Failed to delete transaction. Please try again."
+  },
+  "deleteAccountDialog": {
+    "title": "Delete account",
+    "description": "Permanently delete your account and all your data. This cannot be undone.",
+    "deleteButton": "Delete my account",
+    "confirmTitle": "Are you absolutely sure?",
+    "confirmDescription": "This will permanently delete your account, accounts, transactions, categories, and loans. Enter your password to confirm.",
+    "password": "Password",
+    "incorrectPassword": "Incorrect password.",
+    "failedDelete": "Failed to delete account. Please try again.",
+    "deletePermanently": "Delete permanently"
+  },
+  "changePassword": {
+    "title": "Change password",
+    "description": "You'll stay signed in here, but other devices will be signed out.",
+    "currentPassword": "Current password",
+    "enterCurrentPassword": "Enter your current password.",
+    "newPassword": "New password",
+    "newPasswordTooShort": "New password must be at least 8 characters.",
+    "confirmNewPassword": "Confirm new password",
+    "currentPasswordIncorrect": "Current password is incorrect.",
+    "failed": "Failed to change password. Please try again.",
+    "success": "Password changed successfully.",
+    "changing": "Changing..."
+  },
+  "notificationSettings": {
+    "title": "Notifications",
+    "description": "Choose what you want to be notified about.",
+    "emailNotifications": "Email notifications",
+    "emailNotificationsDescription": "General updates sent to your email.",
+    "loanReminders": "Loan reminders",
+    "loanRemindersDescription": "Reminders about upcoming or overdue loan payments.",
+    "failedLoad": "Failed to load notification settings.",
+    "failedSave": "Failed to save. Please try again."
+  },
+  "accountVerification": {
+    "title": "Account verification",
+    "description": "Verify your email address to keep your account secure.",
+    "failedLoad": "Failed to load account info.",
+    "emailVerified": "Email verified",
+    "activated": "Your account is activated.",
+    "verified": "Verified",
+    "emailNotVerified": "Email not verified",
+    "checkInbox": "Check your inbox for the verification link.",
+    "resendEmail": "Resend email"
+  },
+  "languages": {
+    "en": "English",
+    "bg": "Bulgarian",
+    "de": "German"
+  },
+  "monthlyChart": {
+    "hint": "Tap a bar for a type, or a month for everything."
+  },
+  "months": {
+    "short": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ]
   }
 }

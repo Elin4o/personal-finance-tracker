@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 import { Transaction, deleteTransaction } from "@/lib/transactions-api";
 import {
@@ -26,6 +27,9 @@ export default function DeleteTransactionDialog({
   onOpenChange,
   onSuccess,
 }: DeleteTransactionDialogProps) {
+  const t = useTranslations("transactionDeleteDialog");
+  const tCommon = useTranslations("common");
+
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [prevTransaction, setPrevTransaction] = useState(transaction);
@@ -47,9 +51,9 @@ export default function DeleteTransactionDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError("This loan has payments. Cancel its payments first.");
+        setError(t("loanHasPayments"));
       } else {
-        setError("Failed to delete transaction. Please try again.");
+        setError(t("failedDelete"));
       }
     } finally {
       setIsDeleting(false);
@@ -60,11 +64,13 @@ export default function DeleteTransactionDialog({
     <AlertDialog open={!!transaction} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete transaction</AlertDialogTitle>
+          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
           <AlertDialogDescription>
             {transaction?.loan
-              ? `This transaction belongs to the loan with ${transaction.loan.personName}. If it's a payment, the loan's remaining balance is restored. If it's the loan's starting transaction, the loan is deleted too.`
-              : "This will reverse its effect on the account balance. This action cannot be undone."}
+              ? t("descriptionLoan", {
+                  personName: transaction.loan.personName,
+                })
+              : t("descriptionDefault")}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -75,7 +81,9 @@ export default function DeleteTransactionDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {tCommon("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(event) => {
               event.preventDefault();
@@ -87,10 +95,10 @@ export default function DeleteTransactionDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Deleting...
+                {tCommon("deleting")}
               </>
             ) : (
-              "Delete"
+              tCommon("delete")
             )}
           </AlertDialogAction>
         </AlertDialogFooter>

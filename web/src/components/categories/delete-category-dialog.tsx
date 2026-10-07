@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslations } from "next-intl";
 
 interface DeleteCategoryDialogProps {
   category: Category | null;
@@ -26,6 +27,8 @@ export default function DeleteCategoryDialog({
   onOpenChange,
   onSuccess,
 }: DeleteCategoryDialogProps) {
+  const t = useTranslations("categoriesDeleteDialog");
+  const tCommon = useTranslations("common");
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
   const [prevCategory, setPrevCategory] = useState(category);
@@ -47,11 +50,9 @@ export default function DeleteCategoryDialog({
       onSuccess();
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError(
-          "This category has existing transactions and can't be deleted. Archive it instead.",
-        );
+        setError(t("existingTransactionError"));
       } else {
-        setError("Failed to delete category. Please try again.");
+        setError(t("failedDelete"));
       }
     } finally {
       setIsDeleting(false);
@@ -62,10 +63,11 @@ export default function DeleteCategoryDialog({
     <AlertDialog open={!!category} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete category</AlertDialogTitle>
+          <AlertDialogTitle>{t("title")}</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete &quot;{category?.name}&quot;? This
-            action cannot be undone.
+            {t.rich("description", {
+              name: category?.name as string,
+            })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -76,7 +78,9 @@ export default function DeleteCategoryDialog({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isDeleting}>
+            {tCommon("cancel")}
+          </AlertDialogCancel>
           <AlertDialogAction
             onClick={(event) => {
               event.preventDefault();
@@ -88,10 +92,10 @@ export default function DeleteCategoryDialog({
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Deleting...
+                {tCommon("deleting")}
               </>
             ) : (
-              "Delete"
+              tCommon("delete")
             )}
           </AlertDialogAction>
         </AlertDialogFooter>
