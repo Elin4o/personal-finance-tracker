@@ -14,7 +14,7 @@ export function BottomNav() {
   if (!isMobile) return null;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background pb-[env(safe-area-inset-bottom)]">
       <div className="flex h-16 w-full">
         {navItems.map(({ href, labelKey, icon: Icon, excludeNav }) => {
           if (excludeNav) {
@@ -43,8 +43,6 @@ export function BottomNav() {
           );
         })}
       </div>
-
-      <div className="h-[env(safe-area-inset-bottom)] bg-background" />
     </nav>
   );
 }
