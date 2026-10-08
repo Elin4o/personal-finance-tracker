@@ -10,9 +10,12 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <ProtectedRoute>
       <SidebarProvider>
         <AppSidebar />
-        <main className="flex-1">
+
+        <main className="flex-1 min-w-0">
           <Header />
+
           <div className="p-6 pb-24 lg:pb-6">{children}</div>
+
           <BottomNav />
         </main>
       </SidebarProvider>

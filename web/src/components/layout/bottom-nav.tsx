@@ -14,7 +14,7 @@ export function BottomNav() {
   if (!isMobile) return null;
 
   return (
-    <nav className="sticky bottom-0 z-50 shrink-0 border-t bg-background">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t bg-background">
       <div className="flex h-16 w-full">
         {navItems.map(({ href, labelKey, icon: Icon, excludeNav }) => {
           if (excludeNav) {
@@ -28,7 +28,7 @@ export function BottomNav() {
               key={href}
               href={href}
               className={cn(
-                "flex h-16 min-w-0 flex-1 shrink-0 flex-col items-center justify-center gap-1 px-1 text-xs",
+                "flex h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-xs",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground",
@@ -44,7 +44,7 @@ export function BottomNav() {
         })}
       </div>
 
-      <div className="h-[env(safe-area-inset-bottom)]" />
+      <div className="h-[env(safe-area-inset-bottom)] bg-background" />
     </nav>
   );
 }
