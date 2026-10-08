@@ -15,10 +15,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Header />
 
           <div className="p-6 pb-24 lg:pb-6">{children}</div>
-
-          <BottomNav />
         </main>
       </SidebarProvider>
+      <BottomNav />
     </ProtectedRoute>
   );
 }
