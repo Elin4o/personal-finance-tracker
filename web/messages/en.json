@@ -2,7 +2,6 @@
   "common": {
     "genericError": "Something went wrong. Please try again.",
     "backToSignIn": "Back to sign in",
-    "passwordMismatch": "Passwords do not match.",
     "confirmPassword": "Confirm password",
     "showArchived": "Show archived",
     "name": "Name",
@@ -41,6 +40,14 @@
     "card": "Card",
     "savings": "Savings",
     "other": "Other",
+    "positiveAmountError": "Enter an amount greater than 0.",
+    "emptyEmail": "Please enter your email address.",
+    "emptyPassword": "Please enter your password.",
+    "emptyConfirmPassword": "Please confirm your password.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "searchCurrency": "Search currency...",
+    "noCurrencyFound": "No currency found.",
     "aria": {
       "hidePassword": "Hide password",
       "showPassword": "Show password",
@@ -232,10 +239,11 @@
     "iBorrowed": "I borrowed money",
     "person": "Person",
     "personPlaceholder": "e.g. John Doe",
-
     "forbiddenChanges": "Amount and currency can't be changed after payments have been made",
     "dueDate": "Due date (optional)",
-    "description": "Description (optional)"
+    "description": "Description (optional)",
+    "dueDateBeforeDate": "Due date cannot be before the loan date.",
+    "currencyMismatch": "Loan currency must match account currency."
   },
   "loanDeleteDialog": {
     "loanCantBeDeleted": "This loan has payments and can't be deleted.",
@@ -293,36 +301,30 @@
     "addTitle": "Add transaction",
     "editDescription": "Update this transaction''s details.",
     "addDescription": "Record a new income, expense, or transfer.",
-
     "noAccounts": "Add your first account to start recording transactions.",
     "goToAccounts": "Go to Accounts",
-
     "fromAccount": "From account",
     "toAccount": "To account",
     "selectAccount": "Select an account",
-
-    "noOtherAccounts": "No other accounts yet",
+    "noOtherAccounts": "No other accounts with the same currency.",
     "selectDestinationAccount": "Select destination account",
     "secondAccountRequired": "You need a second account to make a transfer —",
     "addOneHere": "add one here",
-
     "noCategories": "No categories yet",
     "selectCategory": "Select a category",
     "categoryRequired": "You need a {type} category first —",
-
     "descriptionOptional": "Description (optional)",
-
     "saving": "Saving...",
     "saveChanges": "Save changes",
     "addTransaction": "Add transaction",
-
     "selectAccountError": "Select an account.",
     "selectDestinationError": "Select a destination account.",
     "differentAccountError": "Transfer destination must be a different account.",
     "selectCategoryError": "Select a category.",
-    "positiveAmountError": "Enter an amount greater than 0.",
     "selectDateError": "Select a date.",
-
+    "insufficientBalance": "Insufficient balance. Available: {amount} {currency}.",
+    "transferAmountExceedsBalance": "Transfer amount cannot exceed the account balance.",
+    "invalidDetails": "Please check the entered details.",
     "updateError": "Failed to update transaction. Please try again.",
     "createError": "Failed to create transaction. Please try again."
   },

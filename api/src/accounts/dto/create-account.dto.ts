@@ -1,12 +1,13 @@
 import {
   IsBoolean,
   IsEnum,
+  IsIn,
   IsOptional,
   IsString,
-  Length,
   MaxLength,
 } from 'class-validator';
 import { AccountType } from '../../database/enums/account-type.enum';
+import { SUPPORTED_CURRENCY_CODES } from '../../common/currencies';
 
 export class CreateAccountDto {
   @IsString()
@@ -17,7 +18,7 @@ export class CreateAccountDto {
   type!: AccountType;
 
   @IsString()
-  @Length(3, 3)
+  @IsIn(SUPPORTED_CURRENCY_CODES)
   currency!: string;
 
   @IsString()

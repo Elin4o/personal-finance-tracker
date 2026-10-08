@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/auth/auth-layout";
 import { useTranslations } from "next-intl";
+import { required } from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("forgotPassword");
@@ -18,10 +19,28 @@ export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+
+    const emailError = required(email, tCommon("emptyEmail"));
+
+    if (emailError) {
+      errors.email = emailError;
+    }
+
+    setFieldErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+
+    if (!validate()) return;
+
     setIsSubmitting(true);
 
     try {
@@ -50,7 +69,7 @@ export default function ForgotPasswordPage() {
           })}
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">{t("email")}</Label>
@@ -58,12 +77,21 @@ export default function ForgotPasswordPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (fieldErrors.email) {
+                    setFieldErrors({});
+                  }
+                }}
                 autoFocus
                 autoComplete="email"
-                className="h-11 text-base"
+                className={`h-11 text-base ${
+                  fieldErrors.email ? "border-destructive" : ""
+                }`}
               />
+              {fieldErrors.email && (
+                <p className="text-xs text-destructive">{fieldErrors.email}</p>
+              )}
             </div>
 
             {error && (

@@ -75,9 +75,10 @@ export default function CategoryFormDialog({
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setIsSubmitting(true);
 
     if (!validate()) return;
+
+    setIsSubmitting(true);
 
     try {
       if (category) {
@@ -110,14 +111,13 @@ export default function CategoryFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} noValidate className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">{tCommon("name")}</Label>
             <Input
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              required
               maxLength={100}
               placeholder={t("categoryNamePlaceholder")}
               className={fieldErrors.name ? "border-destructive" : ""}
@@ -126,7 +126,6 @@ export default function CategoryFormDialog({
               <p className="text-xs text-destructive">{fieldErrors.name}</p>
             )}
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="type">{tCommon("type")}</Label>
             <Select
@@ -142,13 +141,11 @@ export default function CategoryFormDialog({
               </SelectContent>
             </Select>
           </div>
-
           {error && (
             <p className="text-sm text-destructive" role="alert">
               {error}
             </p>
           )}
-
           <DialogFooter>
             <Button
               className="h-11 px-4 md:h-10"

@@ -200,11 +200,13 @@ export default function AccountsPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
+                            type="button"
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer"
+                            className="shrink-0 touch-manipulation cursor-pointer"
+                            onClick={(event) => event.stopPropagation()}
                           >
-                            <MoreVertical className="size-4 cursor-pointer" />
+                            <MoreVertical className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -267,14 +269,20 @@ export default function AccountsPage() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 touch-manipulation"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <MoreVertical className="size-4" />
                       </Button>
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openEditDialog(account)}>
-                        Edit
+                        {tCommon("edit")}
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
@@ -288,14 +296,16 @@ export default function AccountsPage() {
                           loadAccounts();
                         }}
                       >
-                        {account.isArchived ? "Unarchive" : "Archive"}
+                        {account.isArchived
+                          ? tCommon("unarchive")
+                          : tCommon("archive")}
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => setDeletingAccount(account)}
                       >
-                        Delete
+                        {tCommon("delete")}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

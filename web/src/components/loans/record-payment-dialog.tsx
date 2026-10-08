@@ -184,7 +184,6 @@ export default function RecordPaymentDialog({
                 type="date"
                 value={date}
                 onChange={(event) => setDate(event.target.value)}
-                required
               />
             </div>
           </div>

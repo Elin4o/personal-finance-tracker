@@ -2,7 +2,6 @@
   "common": {
     "genericError": "Нещо се обърка. Моля, опитай отново.",
     "backToSignIn": "Обратно към входа",
-    "passwordMismatch": "Паролите не съвпадат.",
     "confirmPassword": "Потвърди паролата",
     "showArchived": "Покажи архивираните",
     "name": "Име",
@@ -42,6 +41,14 @@
     "card": "Карта",
     "savings": "Спестявания",
     "other": "Друго",
+    "positiveAmountError": "Въведи сума, по-голяма от 0.",
+    "emptyEmail": "Моля, въведете своя имейл адрес.",
+    "emptyPassword": "Моля, въведете своята парола.",
+    "emptyConfirmPassword": "Моля, потвърдете своята парола.",
+    "passwordTooShort": "Паролата трябва да е поне 8 символа.",
+    "passwordMismatch": "Паролите не съвпадат.",
+    "searchCurrency": "Търсене на валута...",
+    "noCurrencyFound": "Няма намерена валута.",
     "aria": {
       "hidePassword": "Скрий паролата",
       "showPassword": "Покажи паролата",
@@ -234,7 +241,9 @@
     "personPlaceholder": "напр. Иван Иванов",
     "forbiddenChanges": "Сумата и валутата не могат да бъдат променяни, след като са направени плащания",
     "dueDate": "Краен срок (по избор)",
-    "description": "Описание (по избор)"
+    "description": "Описание (по избор)",
+    "dueDateBeforeDate": "Крайният срок не може да е преди датата на заема.",
+    "currencyMismatch": "Валутата на заема трябва да съвпада с валутата на сметката."
   },
   "loanDeleteDialog": {
     "loanCantBeDeleted": "Този заем има плащания и не може да бъде изтрит.",
@@ -296,7 +305,7 @@
     "fromAccount": "От сметка",
     "toAccount": "Към сметка",
     "selectAccount": "Избери сметка",
-    "noOtherAccounts": "Все още няма други сметки",
+    "noOtherAccounts": "Няма други сметки със същата валута.",
     "selectDestinationAccount": "Избери целева сметка",
     "secondAccountRequired": "Необходима е втора сметка, за да направиш превод —",
     "addOneHere": "добави я тук",
@@ -311,10 +320,12 @@
     "selectDestinationError": "Избери целева сметка.",
     "differentAccountError": "Целевата сметка трябва да бъде различна.",
     "selectCategoryError": "Избери категория.",
-    "positiveAmountError": "Въведи сума, по-голяма от 0.",
     "selectDateError": "Избери дата.",
     "updateError": "Неуспешно обновяване на транзакцията. Моля, опитай отново.",
-    "createError": "Неуспешно създаване на транзакцията. Моля, опитай отново."
+    "createError": "Неуспешно създаване на транзакцията. Моля, опитай отново.",
+    "insufficientBalance": "Недостатъчен баланс. Налични: {amount} {currency}.",
+    "transferAmountExceedsBalance": "Сумата на превода не може да надвишава наличния баланс по сметката.",
+    "invalidDetails": "Моля, проверете въведените данни."
   },
   "transactionDeleteDialog": {
     "title": "Изтриване на транзакция",

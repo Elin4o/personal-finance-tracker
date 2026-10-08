@@ -45,12 +45,13 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
+  status: number;
+  code?: string;
+
+  constructor(status: number, message: string, code?: string) {
     super(message);
-    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
   }
 }
 
@@ -91,18 +92,26 @@ export async function apiFetch<T>(
     }
 
     let message = `API request failed: ${response.status}`;
+    let code: string | undefined;
+
     try {
-      const body = (await response.json()) as { message?: string | string[] };
+      const body = (await response.json()) as {
+        message?: string | string[];
+        code?: string;
+      };
+
       if (body.message) {
         message = Array.isArray(body.message)
           ? body.message.join(", ")
           : body.message;
       }
+
+      code = body.code;
     } catch {
-      message = `API request failed: ${response.status}`;
+      // Keep the default message and undefined code.
     }
 
-    throw new ApiError(response.status, message);
+    throw new ApiError(response.status, message, code);
   }
   return response.json();
 }

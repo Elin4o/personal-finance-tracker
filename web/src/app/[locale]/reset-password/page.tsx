@@ -6,6 +6,7 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useRouter, Link } from "@/i18n/navigation";
 import { resetPassword } from "@/lib/auth-api";
 import { ApiError } from "@/lib/api";
+import { required } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,23 +27,46 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {};
+
+    const passwordError = required(password, t("emptyPassword"));
+
+    if (passwordError) {
+      errors.password = passwordError;
+    } else if (password.length < 8) {
+      errors.password = tCommon("passwordTooShort");
+    }
+
+    const confirmPasswordError = required(
+      confirmPassword,
+      tCommon("emptyConfirmPassword"),
+    );
+
+    if (confirmPasswordError) {
+      errors.confirmPassword = confirmPasswordError;
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = tCommon("passwordMismatch");
+    }
+
+    setFieldErrors(errors);
+
+    return Object.keys(errors).length === 0;
+  }
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setError("");
 
     if (!token) {
       setError(t("invalidToken"));
       return;
     }
-    if (password.length < 8) {
-      setError(t("passwordTooShort"));
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError(tCommon("passwordMismatch"));
-      return;
-    }
+
+    if (!validate()) return;
 
     setIsSubmitting(true);
 
@@ -68,24 +92,35 @@ export default function ResetPasswordPage() {
         </h2>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password"> {t("newPassword")}</Label>
+            <Label htmlFor="password">{t("newPassword")}</Label>
+
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                minLength={8}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+
+                  if (fieldErrors.password) {
+                    setFieldErrors((current) => ({
+                      ...current,
+                      password: "",
+                    }));
+                  }
+                }}
                 autoComplete="new-password"
-                className="h-11 pr-10 text-base"
+                className={`h-11 pr-10 text-base ${
+                  fieldErrors.password ? "border-destructive" : ""
+                }`}
               />
+
               <button
                 type="button"
-                onClick={() => setShowPassword((v) => !v)}
+                onClick={() => setShowPassword((value) => !value)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
                 aria-label={
                   showPassword ? tAria("hidePassword") : tAria("showPassword")
@@ -98,21 +133,42 @@ export default function ResetPasswordPage() {
                 )}
               </button>
             </div>
+
+            {fieldErrors.password && (
+              <p className="text-xs text-destructive">{fieldErrors.password}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">
               {tCommon("confirmPassword")}
             </Label>
+
             <Input
               id="confirmPassword"
               type={showPassword ? "text" : "password"}
               value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
-              required
+              onChange={(event) => {
+                setConfirmPassword(event.target.value);
+
+                if (fieldErrors.confirmPassword) {
+                  setFieldErrors((current) => ({
+                    ...current,
+                    confirmPassword: "",
+                  }));
+                }
+              }}
               autoComplete="new-password"
-              className="h-11 text-base"
+              className={`h-11 text-base ${
+                fieldErrors.confirmPassword ? "border-destructive" : ""
+              }`}
             />
+
+            {fieldErrors.confirmPassword && (
+              <p className="text-xs text-destructive">
+                {fieldErrors.confirmPassword}
+              </p>
+            )}
           </div>
 
           {error && (

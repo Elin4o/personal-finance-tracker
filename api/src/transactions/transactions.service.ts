@@ -563,6 +563,13 @@ export class TransactionsService {
       if (categoryId) {
         throw new BadRequestException('Transfer cannot have a category');
       }
+
+      if (numericAmount.gt(new Decimal(account.currentBalance))) {
+        throw new BadRequestException({
+          code: 'TRANSFER_AMOUNT_EXCEEDS_BALANCE',
+          message: 'Transfer amount cannot exceed the account balance',
+        });
+      }
     }
 
     if (type !== TransactionType.TRANSFER && transferToAccountId) {

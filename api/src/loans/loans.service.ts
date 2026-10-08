@@ -101,9 +101,10 @@ export class LoansService {
       }
 
       if (account.currency !== createLoanDto.currency) {
-        throw new BadRequestException(
-          'Loan currency must match account currency',
-        );
+        throw new BadRequestException({
+          code: 'LOAN_CURRENCY_MISMATCH',
+          message: 'Loan currency must match account currency',
+        });
       }
 
       const loan = queryRunner.manager.create(Loan, {

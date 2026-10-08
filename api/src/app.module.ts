@@ -31,7 +31,10 @@ import { UsersModule } from './users/users.module';
         database: configService.get<string>('DB_NAME'),
         autoLoadEntities: true,
         synchronize: false,
-        ssl: { rejectUnauthorized: false },
+        ssl:
+          configService.get<string>('NODE_ENV') === 'production'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
     ThrottlerModule.forRoot([

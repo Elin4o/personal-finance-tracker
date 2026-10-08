@@ -35,6 +35,7 @@ import {
 
 import { positiveAmount, required } from "@/lib/validation";
 import { Link } from "@/i18n/navigation";
+import { ApiError } from "@/lib/api";
 
 interface TransactionDialogProps {
   open: boolean;
@@ -122,6 +123,18 @@ export default function TransactionFormDialog({
     })();
   }, [open, transaction]);
 
+  const selectedAccount = accounts.find((account) => account.id === accountId);
+
+  const otherAccounts = accounts.filter((account) => account.id !== accountId);
+
+  const transferDestinations = otherAccounts.filter(
+    (account) => account.currency === selectedAccount?.currency,
+  );
+
+  const relevantCategories = categories.filter(
+    (category) => category.type === type,
+  );
+
   function validate(): boolean {
     const errors: Record<string, string> = {};
 
@@ -142,6 +155,17 @@ export default function TransactionFormDialog({
       } else if (transferToAccountId === accountId) {
         errors.transferToAccountId = t("differentAccountError");
       }
+
+      if (
+        selectedAccount &&
+        amount &&
+        parseFloat(amount) > parseFloat(selectedAccount.currentBalance)
+      ) {
+        errors.amount = t("insufficientBalance", {
+          amount: parseFloat(selectedAccount.currentBalance).toFixed(2),
+          currency: selectedAccount.currency,
+        });
+      }
     } else {
       const categoryError = required(categoryId, t("selectCategoryError"));
 
@@ -150,7 +174,7 @@ export default function TransactionFormDialog({
       }
     }
 
-    const amountError = positiveAmount(amount, t("positiveAmountError"));
+    const amountError = positiveAmount(amount, tCommon("positiveAmountError"));
 
     if (amountError) {
       errors.amount = amountError;
@@ -168,16 +192,6 @@ export default function TransactionFormDialog({
   }
 
   const hasNoAccounts = open && !transaction && accounts.length === 0;
-
-  const transferDestinations = accounts.filter(
-    (account) => account.id !== accountId,
-  );
-
-  const selectedAccount = accounts.find((account) => account.id === accountId);
-
-  const relevantCategories = categories.filter(
-    (category) => category.type === type,
-  );
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -208,8 +222,16 @@ export default function TransactionFormDialog({
 
       onOpenChange(false);
       onSuccess();
-    } catch {
-      setError(transaction ? t("updateError") : t("createError"));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        if (err.code === "TRANSFER_AMOUNT_EXCEEDS_BALANCE") {
+          setError(t("transferAmountExceedsBalance"));
+        } else {
+          setError(err.message || t("invalidDetails"));
+        }
+      } else {
+        setError(transaction ? t("updateError") : t("createError"));
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -235,11 +257,11 @@ export default function TransactionFormDialog({
             <p className="text-sm text-muted-foreground">{t("noAccounts")}</p>
 
             <Button asChild className="h-11 px-4 md:h-10">
-              <Link href="/accounts">{t("goToAccounts")}</Link>
+              <Link href="/accounts">{tCommon("goToAccounts")}</Link>
             </Button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="type">{tCommon("type")}</Label>
 
@@ -257,9 +279,7 @@ export default function TransactionFormDialog({
 
                 <SelectContent position="popper">
                   <SelectItem value="INCOME">{tCommon("income")}</SelectItem>
-
                   <SelectItem value="EXPENSE">{tCommon("expense")}</SelectItem>
-
                   <SelectItem value="TRANSFER">
                     {tCommon("transfer")}
                   </SelectItem>
@@ -272,7 +292,35 @@ export default function TransactionFormDialog({
                 {type === "TRANSFER" ? t("fromAccount") : tCommon("account")}
               </Label>
 
-              <Select value={accountId} onValueChange={setAccountId}>
+              <Select
+                value={accountId}
+                onValueChange={(value) => {
+                  setAccountId(value);
+
+                  const nextSelectedAccount = accounts.find(
+                    (account) => account.id === value,
+                  );
+
+                  const selectedDestination = accounts.find(
+                    (account) => account.id === transferToAccountId,
+                  );
+
+                  if (
+                    selectedDestination &&
+                    nextSelectedAccount &&
+                    selectedDestination.currency !==
+                      nextSelectedAccount.currency
+                  ) {
+                    setTransferToAccountId("");
+                  }
+
+                  setFieldErrors((current) => ({
+                    ...current,
+                    accountId: "",
+                    transferToAccountId: "",
+                  }));
+                }}
+              >
                 <SelectTrigger
                   id="accountId"
                   className={`w-full ${
@@ -304,7 +352,16 @@ export default function TransactionFormDialog({
 
                 <Select
                   value={transferToAccountId}
-                  onValueChange={setTransferToAccountId}
+                  onValueChange={(value) => {
+                    setTransferToAccountId(value);
+
+                    if (fieldErrors.transferToAccountId) {
+                      setFieldErrors((current) => ({
+                        ...current,
+                        transferToAccountId: "",
+                      }));
+                    }
+                  }}
                   disabled={transferDestinations.length === 0}
                 >
                   <SelectTrigger
@@ -333,16 +390,24 @@ export default function TransactionFormDialog({
                   </SelectContent>
                 </Select>
 
-                {transferDestinations.length === 0 ? (
+                {!accountId ? (
+                  <p className="text-xs text-muted-foreground"></p>
+                ) : transferDestinations.length === 0 ? (
                   <p className="text-xs text-muted-foreground">
-                    {t("secondAccountRequired")}{" "}
-                    <Link
-                      href="/accounts"
-                      className="text-primary hover:underline"
-                    >
-                      {t("addOneHere")}
-                    </Link>
-                    .
+                    {otherAccounts.length === 0 ? (
+                      <>
+                        {t("secondAccountRequired")}{" "}
+                        <Link
+                          href="/accounts"
+                          className="text-primary hover:underline"
+                        >
+                          {t("addOneHere")}
+                        </Link>
+                        .
+                      </>
+                    ) : (
+                      t("noOtherAccounts")
+                    )}
                   </p>
                 ) : (
                   fieldErrors.transferToAccountId && (
@@ -358,7 +423,16 @@ export default function TransactionFormDialog({
 
                 <Select
                   value={categoryId}
-                  onValueChange={setCategoryId}
+                  onValueChange={(value) => {
+                    setCategoryId(value);
+
+                    if (fieldErrors.categoryId) {
+                      setFieldErrors((current) => ({
+                        ...current,
+                        categoryId: "",
+                      }));
+                    }
+                  }}
                   disabled={relevantCategories.length === 0}
                 >
                   <SelectTrigger
@@ -427,7 +501,6 @@ export default function TransactionFormDialog({
                     }
                   }}
                   className={fieldErrors.amount ? "border-destructive" : ""}
-                  required
                 />
 
                 {fieldErrors.amount && (
@@ -444,8 +517,16 @@ export default function TransactionFormDialog({
                   id="date"
                   type="date"
                   value={date}
-                  onChange={(event) => setDate(event.target.value)}
-                  required
+                  onChange={(event) => {
+                    setDate(event.target.value);
+
+                    if (fieldErrors.date) {
+                      setFieldErrors((current) => ({
+                        ...current,
+                        date: "",
+                      }));
+                    }
+                  }}
                   className={fieldErrors.date ? "border-destructive" : ""}
                 />
 
@@ -479,7 +560,7 @@ export default function TransactionFormDialog({
               <Button
                 className="h-11 px-4 md:h-10"
                 type="submit"
-                disabled={isSubmitting || !accountId}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? (
                   <>
