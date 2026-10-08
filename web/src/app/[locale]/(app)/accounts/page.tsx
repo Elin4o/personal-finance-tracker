@@ -141,7 +141,7 @@ export default function AccountsPage() {
 
       {!isLoading && !error && accounts.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-16 text-center">
-          <p className="text-sm font-medium">{t("noAccounts")}</p>
+          <p className="text-sm font-medium">{t("noAccount")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {t("addFirstAccount")}
           </p>
