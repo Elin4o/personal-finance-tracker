@@ -17,9 +17,7 @@ export function BottomNav() {
     <nav className="sticky inset-x-0 bottom-0 z-50 border-t bg-background">
       <div className="flex h-16 items-stretch">
         {navItems.map(({ href, labelKey, icon: Icon, excludeNav }) => {
-          if (excludeNav) {
-            return null;
-          }
+          if (excludeNav) return null;
 
           const isActive = pathname === href;
 
@@ -42,8 +40,6 @@ export function BottomNav() {
           );
         })}
       </div>
-
-      <div style={{ height: "env(safe-area-inset-bottom)" }} />
     </nav>
   );
 }
